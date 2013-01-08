@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "homepage": "https://github.com/1999/node-couchdb",
   "author": "Dmitry Sorin <info@staypositive.ru>",
-  "description": "node.js package to interact with CouchDB using ETags and your own cache layer (memcached, fs, etc)",
+  "description": "node.js package to interact with CouchDB using ETags and your own cache layer (memcached, fs, memory, etc)",
   "contributors": [
     "Dmitry Sorin (http://www.staypositive.ru)"
   ],
