@@ -16,8 +16,7 @@
     "url": "https://github.com/1999/node-couchdb/issues"
   },
   "directories": {
-    "example": "example",
-    "test": "test"
+    "example": "examples"
   },
   "keywords": [
     "couchdb",

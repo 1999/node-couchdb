@@ -1,7 +1,7 @@
 Introduction
 ============
 
-[CouchDB](http://couchdb.apache.org/) is amazing and easy-to-use NoSQL document-oriented database. This package provides an easy way to interact with CouchDB using Memcached server as a cache layer to store the ETags which uniquely represent the current state of the documents. Moreover you can use [your own cache implementation](https://github.com/1999/couchdb-memcached/blob/master/example/own-cache.js) API.
+[CouchDB](http://couchdb.apache.org/) is amazing and easy-to-use NoSQL document-oriented database. This package provides an easy way to interact with CouchDB using ETags and your preferred cache layer (memcached, file system, memory, etc). Check out [examples](https://github.com/1999/node-couchdb/tree/master/example) folder for more info.
 
 Installation
 ============
@@ -18,136 +18,96 @@ to run examples
 API
 ========
 
-```
-couchdb.useCache("memcache");
-couchdb.useCache("fs");
-couchdb.useCache("custom");
-```
-
 How to start
 ``` javascript
-// using simple memcache client (https://npmjs.org/package/memcache)
+// use memory caching
+var nodeCouchDB = require("node-couchdb");
+var couch = new nodeCouchDB("localhost", 5984);
+
+// even simplier, but you can't set host and port this way
+var couch = require("node-couchdb");
+
+// use memcached with "memcache" NPM package
+var nodeCouchDB = require("node-couchdb");
 var memcacheClient = require("memcache").Client(11211, "localhost");
 memcacheClient.on("connect", function () {
-	var db = new MemCouchDB("localhost", 5984, memcacheClient);
+	memcacheClient.invalidate = function () {};
+	var couch = new nodeCouchDB("localhost", 5984, memcacheClient);
 });
 
 memcacheClient.connect();
 ```
 
-``` javascript
-// using your own cache client which should contain both "set(key, data, callback)" and "get(key, callback)" methods
-var db = new MemCouchDB("localhost", 5984, cacheClient);
-```
-
 Fetch document by its id
 ``` javascript
-var dbName = "database";
-var docId = "some_document_id";
-
-CouchDB.get(dbName, docId, function (err, resData) {
+couch.get("databaseName", "some_document_id", function (err, resData) {
 	if (err) {
-		util.error(err);
+		console.error(err);
 		return;
 	}
 
-	util.puts(util.inspect(resData, false, null, true));
+	console.dir(resData);
 });
 ```
 
 Insert a document
 ``` javascript
-var dbName = "database";
-var doc = {
+couch.insert("databaseName", {
 	"_id" : "document_id",
 	"field" : ["sample", "data", true]
-};
-
-CouchDB.insert(dbName, doc, function (err, resData) {
+}, function (err, resData) {
 	if (err) {
-		util.error(err);
+		console.error(err);
 		return;
 	}
 
-	util.puts(util.inspect(resData, false, null, true));
+	console.dir(resData)
 });
 ```
 
 Update a document
 ``` javascript
-var dbName = "database";
-var doc = {
+// note that "doc" must have both "_id" and "_rev" fields
+couch.update("databaseName, {
 	"_id" : "document_id",
 	"_rev" : "1-xxx"
 	"field" : "new sample data",
 	"field2" : 1
-};
-
-// note that "doc" must have both "_id" and "_rev" fields
-CouchDB.update(dbName, doc, function (err, resData) {
+}, function (err, resData) {
 	if (err) {
-		util.error(err);
+		console.error(err);
 		return;
 	}
 
-	util.puts(util.inspect(resData, false, null, true));
+	console.dir(resData);
 });
 ```
 
 Delete a document
 ``` javascript
-var dbName = "database";
-var docId = "document_id";
-var revision = "2-yyy";
-
-CouchDB.del(dbName, docId, revision, function (err, resData) {
+couch.del("databaseName", "some_document_id", "document_revision, function (err, resData) {
 	if (err) {
-		util.error(err);
+		console.error(err);
 		return;
 	}
 
-	util.puts(util.inspect(resData, false, null, true));
+	console.dir(resData);
 });
 ```
 
 Generate unique identifier(s)
 ``` javascript
-CouchDB.uniqid(1, function (err, ids) { // or even simplier: CouchDB.uniqid(function (err, ids) {
+couch.uniqid(1, function (err, ids) { // or even simplier: couch.uniqid(function (err, ids) {
 	if (err) {
-		util.error(err);
+		console.error(err);
 		return;
 	}
 
-	util.puts(util.inspect(ids, false, null, true)); // ids is an array
-});
-```
-
-Create database
-``` javascript
-CouchDB.createDatabase("database_name", function (err) {
-	if (err) {
-		util.error(err);
-		return;
-	}
-
-	util.puts("Database created");
-});
-```
-
-Drop database
-``` javascript
-CouchDB.dropDatabase("database_name", function (err) {
-	if (err) {
-		util.error(err);
-		return;
-	}
-
-	util.puts("Database deleted");
+	console.dir(ids);
 });
 ```
 
 Fetch data by requesting a view
-
 ``` javascript
 var dbName = "database";
 var startKey = ["Ann"];
@@ -158,22 +118,14 @@ var queryOptions = {
 	"endkey" : endKey
 };
 
-CouchDB.get(dbName, viewUrl, queryOptions, function (err, resData) {
+couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
 	if (err) {
-		util.error(err);
+		console.error(err);
 		return;
 	}
 
-	util.puts(util.inspect(resData, false, null, true));
+	console.dir(resData)
 });
 ```
 
-Live examples
-=============
-
-Look into the *examples* folder
-
-Package author
-==============
-
-[Dmitry Sorin](http://www.staypositive.ru) @ [Yandex LLC](http://www.yandex.ru)
+```couch.createDatabase()```, ```couch.dropDatabase()``` and ```couch.listDatabases()``` are also available. Check out the [sources](https://github.com/1999/node-couchdb/blob/master/lib/node-couchdb.js) for more info.
