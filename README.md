@@ -41,10 +41,8 @@ memcacheClient.connect();
 Fetch document by its id
 ``` javascript
 couch.get("databaseName", "some_document_id", function (err, resData) {
-	if (err) {
-		console.error(err);
-		return;
-	}
+	if (err)
+		return console.error(err);
 
 	console.dir(resData);
 });
@@ -56,10 +54,8 @@ couch.insert("databaseName", {
 	"_id" : "document_id",
 	"field" : ["sample", "data", true]
 }, function (err, resData) {
-	if (err) {
-		console.error(err);
-		return;
-	}
+	if (err)
+		return console.error(err);
 
 	console.dir(resData)
 });
@@ -74,10 +70,8 @@ couch.update("databaseName, {
 	"field" : "new sample data",
 	"field2" : 1
 }, function (err, resData) {
-	if (err) {
-		console.error(err);
-		return;
-	}
+	if (err)
+		return console.error(err);
 
 	console.dir(resData);
 });
@@ -85,11 +79,9 @@ couch.update("databaseName, {
 
 Delete a document
 ``` javascript
-couch.del("databaseName", "some_document_id", "document_revision, function (err, resData) {
-	if (err) {
-		console.error(err);
-		return;
-	}
+couch.del("databaseName", "some_document_id", "document_revision", function (err, resData) {
+	if (err)
+		return console.error(err);
 
 	console.dir(resData);
 });
@@ -98,10 +90,8 @@ couch.del("databaseName", "some_document_id", "document_revision, function (err,
 Generate unique identifier(s)
 ``` javascript
 couch.uniqid(1, function (err, ids) { // or even simplier: couch.uniqid(function (err, ids) {
-	if (err) {
-		console.error(err);
-		return;
-	}
+	if (err)
+		return console.error(err);
 
 	console.dir(ids);
 });
@@ -119,10 +109,8 @@ var queryOptions = {
 };
 
 couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
-	if (err) {
-		console.error(err);
-		return;
-	}
+	if (err)
+		return console.error(err);
 
 	console.dir(resData)
 });

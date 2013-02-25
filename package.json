@@ -1,6 +1,6 @@
 {
   "name": "node-couchdb",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "homepage": "https://github.com/1999/node-couchdb",
   "author": "Dmitry Sorin <info@staypositive.ru>",
   "description": "node.js package to interact with CouchDB using ETags and your favorite cache layer (memcached, fs, memory, etc)",
@@ -28,7 +28,8 @@
     "request": "2.12"
   },
   "devDependencies": {
-    "memcache" : "0.3.x"
+    "memcache" : "0.3.x",
+    "memcached" : "0.2.x"
   },
   "license": "MIT",
   "engines": {

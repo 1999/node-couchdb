@@ -1,12 +1,27 @@
 "use strict";
 
 var nodeCouchDB = require("../");
-var memcache = require("memcache");
+var memcached = require("memcached");
 
-var memcacheClient = new memcache.Client(11211, "localhost");
-memcacheClient.on("connect", function () {
-	var couch = new nodeCouchDB("localhost", 5984, memcacheClient);
-	require("./sample.js").runTest(couch);
-});
+var memcachedClient = new memcached("127.0.0.1:11211");
+var cacheAPI = {
+	get: function (key, callback) {
+		memcachedClient.get(key, function (err, data) {
+			if (err || data === false || data === undefined)
+				return callback(err);
 
-memcacheClient.connect();
+			callback(null, data);
+		});
+	},
+
+	set: function (key, value, callback) {
+		memcachedClient.set(key, value, 0, function () {
+			callback && callback.apply(null, arguments);
+		});
+	},
+
+	_serialize: false
+};
+
+var couch = new nodeCouchDB("localhost", 5984, cacheAPI);
+require("./sample.js").runTest(couch);
