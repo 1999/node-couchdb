@@ -3,10 +3,11 @@
 var fs = require("fs");
 var path = require("path");
 var nodeCouchDB = require("../");
+var tmpDir = process.env.TMPDIR || require("os").tmpDir();
 
 var fsCache = {
 	get: function (key, callback) {
-		var filePath = path.resolve(process.env.TMPDIR + "/" + key);
+		var filePath = path.resolve(tmpDir + "/" + key);
 		console.log("Get data from path: " + filePath);
 
 		fs.exists(filePath, function (exists) {
@@ -19,7 +20,7 @@ var fsCache = {
 	},
 
 	set: function (key, value, callback) {
-		var filePath = path.resolve(process.env.TMPDIR + "/" + key);
+		var filePath = path.resolve(tmpDir + "/" + key);
 		console.log("Write data to path: " + filePath);
 
 		fs.writeFile(filePath, value, "utf-8", function () {
