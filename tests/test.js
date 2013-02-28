@@ -55,16 +55,16 @@ exports.cache = {
 	},
 	tearDown: function (callback) {
 		if (this.memcachedClient)
-        	this.memcachedClient.end();
+			this.memcachedClient.end();
 
-        if (this.memcacheClient)
-        	this.memcacheClient.close();
+		if (this.memcacheClient)
+			this.memcacheClient.close();
 
-        callback();
-    },
+		callback();
+	},
 
-    fs: function (test) {
-    	var fs = require("fs");
+	fs: function (test) {
+		var fs = require("fs");
 		var path = require("path");
 		var tmpDir = process.env.TMPDIR || require("os").tmpDir();
 
@@ -93,12 +93,12 @@ exports.cache = {
 		};
 
 		commonTest.call(this, test, fsCache);
-    },
-    memory: function (test) {
-    	commonTest.call(this, test);
-    },
-    memcached: function (test) {
-    	var memcached = require("memcached");
+	},
+	memory: function (test) {
+		commonTest.call(this, test);
+	},
+	memcached: function (test) {
+		var memcached = require("memcached");
 		var memcachedClient = new memcached("localhost:11211", {keyCompression: false, timeout: 0, retries: 0, reconnect: 3000, poolSize: 1});
 
 		var cacheAPI = {
@@ -122,9 +122,9 @@ exports.cache = {
 
 		this.memcachedClient = memcachedClient;
 		commonTest.call(this, test, cacheAPI);
-    },
-    memcache: function (test) {
-    	var memcache = require("memcache");
+	},
+	memcache: function (test) {
+		var memcache = require("memcache");
 		var memcacheClient = new memcache.Client(11211, "localhost");
 		var self = this;
 
@@ -134,5 +134,5 @@ exports.cache = {
 
 		this.memcacheClient = memcacheClient;
 		memcacheClient.connect();
-    }
+	}
 };
