@@ -51,8 +51,8 @@ couch.get("databaseName", "some_document_id", function (err, resData) {
 Insert a document
 ``` javascript
 couch.insert("databaseName", {
-	"_id" : "document_id",
-	"field" : ["sample", "data", true]
+	_id: "document_id",
+	field: ["sample", "data", true]
 }, function (err, resData) {
 	if (err)
 		return console.error(err);
@@ -64,11 +64,11 @@ couch.insert("databaseName", {
 Update a document
 ``` javascript
 // note that "doc" must have both "_id" and "_rev" fields
-couch.update("databaseName, {
-	"_id" : "document_id",
-	"_rev" : "1-xxx"
-	"field" : "new sample data",
-	"field2" : 1
+couch.update("databaseName", {
+	_id: "document_id",
+	_rev: "1-xxx"
+	field: "new sample data",
+	field2: 1
 }, function (err, resData) {
 	if (err)
 		return console.error(err);
@@ -104,8 +104,8 @@ var startKey = ["Ann"];
 var endKey = ["George"];
 var viewUrl = "_design/list/_views/by_firstname";
 var queryOptions = {
-	"startkey" : startKey,
-	"endkey" : endKey
+	startkey: startKey,
+	endkey: endKey
 };
 
 couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
