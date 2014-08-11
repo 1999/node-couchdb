@@ -1,24 +1,21 @@
 var nodeCouchDB = require("../");
 
 var commonTest = function (test, cacheAPI) {
-	test.expect(12);
+	test.expect(16);
 
 	var couch = new nodeCouchDB("localhost", 5984, cacheAPI);
 	var dbName = "sample_" + Date.now();
 
 	couch.createDatabase(dbName, function (err) {
-		if (err)
-			throw new Error(err);
+		test.strictEqual(err, null, err);
 
 		couch.insert(dbName, {}, function (err, resData) {
-			if (err)
-				throw new Error(err);
+			test.strictEqual(err, null, err);
 
 			var docId = resData.data.id;
 
 			couch.get(dbName, docId, function (err, resData) {
-				if (err)
-					throw new Error(err);
+				test.strictEqual(err, null, err);
 
 				test.strictEqual(resData.status, 200, "Result status code is not 200");
 				test.equal(typeof resData, "object", "Result is not an object");
@@ -30,8 +27,7 @@ var commonTest = function (test, cacheAPI) {
 				// timeout is used because we do not wait for cache.set() callback
 				setTimeout(function () {
 					couch.get(dbName, docId, function (err, resData) {
-						if (err)
-							throw new Error(err);
+						test.strictEqual(err, null, err);
 
 						test.strictEqual(resData.status, 304, "Result status code is not 304");
 						test.equal(typeof resData, "object", "Result is not an object");
