@@ -1,4 +1,4 @@
-# node-couchdb ![Build Status](https://secure.travis-ci.org/1999/node-couchdb.svg?branch=master) [![Dependency Status](https://david-dm.org/1999/node-couchdb.svg)](https://david-dm.org/1999/node-couchdb) [![devDependency Status](https://david-dm.org/1999/node-couchdb/dev-status.svg)](https://david-dm.org/1999/node-couchdb#info=devDependencies)
+# node-couchdb [![Build Status](https://secure.travis-ci.org/1999/node-couchdb.svg?branch=master)](http://travis-ci.org/1999/node-couchdb) [![Dependency Status](https://david-dm.org/1999/node-couchdb.svg)](https://david-dm.org/1999/node-couchdb) [![devDependency Status](https://david-dm.org/1999/node-couchdb/dev-status.svg)](https://david-dm.org/1999/node-couchdb#info=devDependencies)
 
 [CouchDB](http://couchdb.apache.org/) is amazing and easy-to-use NoSQL document-oriented database. This package provides an easy way to interact with CouchDB using ETags and your preferred cache layer (memcached, file system, memory, etc). Check out [examples](https://github.com/1999/node-couchdb/tree/master/examples) folder for more info.
 
