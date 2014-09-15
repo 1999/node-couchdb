@@ -2,9 +2,6 @@
 
 [CouchDB](http://couchdb.apache.org/) is amazing and easy-to-use NoSQL document-oriented database. This package provides an easy way to interact with CouchDB using ETags and your preferred cache layer (memcached, file system, memory, etc). Check out [examples](https://github.com/1999/node-couchdb/tree/master/examples) folder for more info.
 
-# Karma [![Build Status](https://secure.travis-ci.org/karma-runner/karma.svg?branch=master)](http://travis-ci.org/karma-runner/karma) 
-
-
 # Installation
 ``` bash
 npm install node-couchdb
