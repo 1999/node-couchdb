@@ -1,3 +1,7 @@
+# 0.3.0
+
+ * Use 5 seconds default timeout for all requests
+
 # 0.2.2
 
  * Do not use `_serialize` property: we can't guarantee that the cached value won't change later if `_serialize` if set to `false` and value is cached in memory. Now every cached value is serialized by default;
