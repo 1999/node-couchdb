@@ -1,3 +1,7 @@
+# 0.3.1
+
+ * `node-couchdb` constructor accepts 4th parameter - default timeout for all requests, which is 5 seconds by default.
+
 # 0.3.0
 
  * Use 5 seconds default timeout for all requests
