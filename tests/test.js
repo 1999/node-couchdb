@@ -129,6 +129,31 @@ exports.cache = {
 		memcacheClient.connect();
 	},
 
+    issue_5: function (test) {
+        test.expect(4);
+
+        var couch = new nodeCouchDB("localhost", 5984);
+        couch.listDatabases(function (err, dbs) {
+            test.strictEqual(err, null, err);
+            test.strictEqual(Array.isArray(dbs), true, 'dbs must be an array');
+
+            var types = dbs.reduce(function (types, db) {
+                var type = typeof db;
+
+                if (types.indexOf(type) === -1) {
+                    types.push(type);
+                }
+
+                return types;
+            }, []);
+
+            test.strictEqual(types.length, 1, 'must contain only one type');
+            test.strictEqual(types[0], 'string', 'it must be a string');
+
+            test.done();
+        });
+    },
+
     issue_9: function (test) {
         test.expect(5);
 
