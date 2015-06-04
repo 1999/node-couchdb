@@ -46,9 +46,6 @@ var commonTest = function (test, cacheAPI) {
 };
 
 exports.cache = {
-	setUp: function (callback) {
-		callback();
-	},
 	tearDown: function (callback) {
 		if (this.memcachedClient)
 			this.memcachedClient.end();

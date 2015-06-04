@@ -28,12 +28,12 @@
     "nosql"
   ],
   "dependencies": {
-    "asker": "0.4.x"
+    "asker": "0.6.2"
   },
   "devDependencies": {
     "memcache" : "0.3.x",
     "memcached" : "0.2.x",
-    "nodeunit" : "0.7.x"
+    "nodeunit" : "0.9.1"
   },
   "license": "MIT",
   "engines": {
