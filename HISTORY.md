@@ -1,3 +1,13 @@
+# 0.4.0
+
+ * `listDatabases()` method output was wrong (#5, fixed by @dethtron5000)
+ * node.js minimum version is now 0.10 due to asker's `contimer` dependency.
+
+# 0.3.2
+
+ * `update()` method failed to update docs with URL in their _id (#7)
+ * update dependencies: asker and nodeunit.
+
 # 0.3.1
 
  * `node-couchdb` constructor accepts 4th parameter - default timeout for all requests, which is 5 seconds by default.
