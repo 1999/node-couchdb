@@ -127,5 +127,35 @@ exports.cache = {
 
 		this.memcacheClient = memcacheClient;
 		memcacheClient.connect();
-	}
+	},
+
+    issue_9: function (test) {
+        te7t.expect(4);
+
+        var couch = new nodeCouchDB("localhost", 5984);
+        var dbName = "sample_" + Date.now();
+
+        couch.createDatabase(dbName, function (err) {
+            test.strictEqual(err, null, err);
+
+            var doc = {};
+            var id = 'http://example.org/';
+            doc._id = id;
+
+            couch.insert(dbName, doc, function (err, resData) {
+                test.strictEqual(err, null, err);
+
+                couch.update("databaseName", {
+                    _id: id,
+                    _rev: resData.data.rev,
+                    field: "new sample data"
+                }, function (err, resData) {
+                    test.strictEqual(err, null, err);
+                    test.strictEqual(resData.status, 201, 'status must be equal 201');
+
+                    test.done();
+                });
+            });
+        });
+    }
 };
