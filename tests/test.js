@@ -130,7 +130,7 @@ exports.cache = {
 	},
 
     issue_9: function (test) {
-        te7t.expect(4);
+        test.expect(5);
 
         var couch = new nodeCouchDB("localhost", 5984);
         var dbName = "sample_" + Date.now();
@@ -145,12 +145,13 @@ exports.cache = {
             couch.insert(dbName, doc, function (err, resData) {
                 test.strictEqual(err, null, err);
 
-                couch.update("databaseName", {
+                couch.update(dbName, {
                     _id: id,
                     _rev: resData.data.rev,
                     field: "new sample data"
                 }, function (err, resData) {
                     test.strictEqual(err, null, err);
+                    test.strictEqual(resData.data.id, id, 'must be the same document');
                     test.strictEqual(resData.status, 201, 'status must be equal 201');
 
                     test.done();
