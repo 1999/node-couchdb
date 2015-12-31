@@ -9,37 +9,43 @@ var commonTest = function (test, cacheAPI) {
 	couch.createDatabase(dbName, function (err) {
 		test.strictEqual(err, null, err);
 
-		couch.insert(dbName, {}, function (err, resData) {
+		// Creating the same database a second time should not cause failure.
+
+		couch.createDatabase(dbName, function (err) {
 			test.strictEqual(err, null, err);
 
-			var docId = resData.data.id;
-
-			couch.get(dbName, docId, function (err, resData) {
+			couch.insert(dbName, {}, function (err, resData) {
 				test.strictEqual(err, null, err);
 
-				test.strictEqual(resData.status, 200, "Result status code is not 200");
-				test.equal(typeof resData, "object", "Result is not an object");
-				test.ok(!!resData.data, "Result data is missing");
-				test.ok(!!resData.status, "Result status is missing");
-				test.ok(!!resData.headers, "Result headers missing");
-				test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
+				var docId = resData.data.id;
 
-				// timeout is used because we do not wait for cache.set() callback
-				setTimeout(function () {
-					couch.get(dbName, docId, function (err, resData) {
-						test.strictEqual(err, null, err);
+				couch.get(dbName, docId, function (err, resData) {
+					test.strictEqual(err, null, err);
 
-						test.strictEqual(resData.status, 304, "Result status code is not 304");
-						test.equal(typeof resData, "object", "Result is not an object");
-						test.ok(!!resData.data, "Result data is missing");
-						test.ok(!!resData.status, "Result status is missing");
-						test.ok(!!resData.headers, "Result headers missing");
-						test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
+					test.strictEqual(resData.status, 200, "Result status code is not 200");
+					test.equal(typeof resData, "object", "Result is not an object");
+					test.ok(!!resData.data, "Result data is missing");
+					test.ok(!!resData.status, "Result status is missing");
+					test.ok(!!resData.headers, "Result headers missing");
+					test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
 
-						couch.dropDatabase("sample");
-						test.done();
-					});
-				}, 1000);
+					// timeout is used because we do not wait for cache.set() callback
+					setTimeout(function () {
+						couch.get(dbName, docId, function (err, resData) {
+							test.strictEqual(err, null, err);
+
+							test.strictEqual(resData.status, 304, "Result status code is not 304");
+							test.equal(typeof resData, "object", "Result is not an object");
+							test.ok(!!resData.data, "Result data is missing");
+							test.ok(!!resData.status, "Result status is missing");
+							test.ok(!!resData.headers, "Result headers missing");
+							test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
+
+							couch.dropDatabase("sample");
+							test.done();
+						});
+					}, 1000);
+				});
 			});
 		});
 	});
