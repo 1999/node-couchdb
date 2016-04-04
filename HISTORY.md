@@ -1,3 +1,8 @@
+# 0.5.0
+
+ * new: createDatabase invokes callback with EDBEXISTS error if database already exists
+ * new: dropDatabase invokes callback with EDBMISSING error if database doesn't exist
+
 # 0.4.0
 
  * `listDatabases()` method output was wrong (#5, fixed by @dethtron5000)
