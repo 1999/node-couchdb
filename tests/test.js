@@ -1,7 +1,7 @@
 var nodeCouchDB = require("../");
 
 var commonTest = function (test, cacheAPI) {
-	test.expect(16);
+	test.expect(17);
 
 	var couch = new nodeCouchDB("localhost", 5984, cacheAPI);
 	var dbName = "sample_" + Date.now();
