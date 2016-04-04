@@ -1,7 +1,7 @@
 var nodeCouchDB = require("../");
 
 var commonTest = function (test, cacheAPI) {
-	test.expect(17);
+	test.expect(20);
 
 	var couch = new nodeCouchDB("localhost", 5984, cacheAPI);
 	var dbName = "sample_" + Date.now();
@@ -9,10 +9,10 @@ var commonTest = function (test, cacheAPI) {
 	couch.createDatabase(dbName, function (err) {
 		test.strictEqual(err, null, err);
 
-		// Creating the same database a second time should not cause failure.
-
+		// Creating the same database second time should cause EDBEXISTS error
 		couch.createDatabase(dbName, function (err) {
-			test.strictEqual(err, null, err);
+            test.ok(!!err, true, 'Expected error is not met');
+            test.strictEqual(err.code, 'EDBEXISTS', 'Expected EDBEXISTS error is not met');
 
 			couch.insert(dbName, {}, function (err, resData) {
 				test.strictEqual(err, null, err);
@@ -41,8 +41,12 @@ var commonTest = function (test, cacheAPI) {
 							test.ok(!!resData.headers, "Result headers missing");
 							test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
 
-							couch.dropDatabase("sample");
-							test.done();
+							couch.dropDatabase("sample", function (err) {
+                                test.ok(!!err, true, 'Expected error is not met');
+                                test.strictEqual(err.code, 'EDBMISSING', 'Expected EDBMISSING error is not met');
+
+                                test.done();
+                            });
 						});
 					}, 1000);
 				});
