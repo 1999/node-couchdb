@@ -5,7 +5,8 @@
   "author": "Dmitry Sorin <info@staypositive.ru>",
   "description": "node.js package to interact with CouchDB using ETags and your favorite cache layer (memcached, fs, memory, etc)",
   "contributors": [
-    "Dmitry Sorin (http://www.staypositive.ru)"
+    "Eric Scouten",
+    "Peter Olson"
   ],
   "main": "./index.js",
   "repository": {
