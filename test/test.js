@@ -30,7 +30,7 @@ describe('node-couchdb tests', () => {
             assert.isNull(err, 'Unexpected error occured');
 
             couch.createDatabase(dbName, err => {
-                assert.isNotNull(err, 'Error was epected but nothing happened');
+                assert.isNotNull(err, 'Error was expected but nothing happened');
                 assert.instanceOf(err, Error, 'err is not an instance of Error');
                 assert.strictEqual(err.code, 'EDBEXISTS', 'err code is not EDBEXISTS');
 
@@ -39,12 +39,119 @@ describe('node-couchdb tests', () => {
         });
     });
 
+    it('should drop database', done => {
+        couch.createDatabase(dbName, err => {
+            assert.isNull(err, 'Unexpected error occured');
+
+            couch.dropDatabase(dbName, err => {
+                assert.isNull(err, 'Unexpected error occured');
+                done();
+            });
+        });
+    });
+
+    it('should fail with EDBMISSING if database with this name doesn\'t exist', done => {
+        couch.dropDatabase(dbName, err => {
+            assert.isNotNull(err, 'Error was expected but nothing happened');
+            assert.instanceOf(err, Error, 'err is not an instance of Error');
+            assert.strictEqual(err.code, 'EDBMISSING', 'err code is not EDBMISSING');
+
+            done();
+        });
+    });
+
     it('should fail if CouchDB server is unavailable', done => {
         let couch = new nodeCouchDb('127.0.0.2', 80);
 
         couch.createDatabase(dbName, err => {
-            assert.isNotNull(err, 'Error was epected but nothing happened');
+            assert.isNotNull(err, 'Error was expected but nothing happened');
             done();
+        });
+    });
+
+    it('should insert documents', done => {
+        couch.createDatabase(dbName, err => {
+            assert.isNotNull(err, 'Error was expected but nothing happened');
+
+            couch.insert(dbName, {}, (err, resData) => {
+                assert.isNull(err, 'Unexpected error occured');
+                assert.isObject(resData, 'Result is not an object');
+                assert.isObject(resData.data, 'Result data is not an object');
+                assert.isString(resData.data.id, 'ID is not a string');
+                assert.match(resData.data.id, /^[a-z0-9]{40}$/, 'ID is not valid');
+
+                done();
+            });
+        });
+    });
+
+    it('should get expected document', done => {
+        couch.createDatabase(dbName, err => {
+            assert.isNotNull(err, 'Error was expected but nothing happened');
+
+            couch.insert(dbName, {}, (err, resData) => {
+                assert.isNull(err, 'Unexpected error occured');
+                const docId = resData.data.id;
+
+                couch.get(dbName, docId, (err, resData) => {
+                    assert.isNull(err, 'Unexpected error occured');
+                    assert.isObject(resData, 'Result is not an object');
+                    assert.strictEqual(resData.status, 200, 'Result status code is not 200');
+                    assert.isObject(resData.data, 'Document is missing');
+                    assert.isObject(resData.headers, 'Headers are missing');
+                    assert.strictEqual(Object.keys(resData).length, 3, 'Wrong number of result fields');
+
+                    done();
+                });
+            });
+        });
+    });
+
+    it('listDatabase should not crash when parsing result', done => {
+        couch.listDatabases((err, dbs) => {
+            assert.isNull(err, 'Unexpected error occured');
+            assert.instanceOf(dbs, Array, 'dbs variable is not an Array instance');
+
+            const types = dbs.reduce((memo, db) => {
+                const type = typeof db;
+
+                if (!memo.includes(type)) {
+                    memo.push(type);
+                }
+
+                return memo;
+            }, []);
+
+            assert.strictEqual(types.length, 1, 'More than one type is listed among dbs');
+            assert.strictEqual(types[0], 'string', 'Type is not a string');
+
+            done();
+        });
+    });
+
+    it('should not encode startkey_docid as JSON', done => {
+        couch.createDatabase(dbName, err => {
+            assert.isNull(err, 'Unexpected error occured');
+
+            const doc = {};
+            const id = 'http://example.org/';
+            doc._id = id;
+
+            couch.insert(dbName, doc, (err, resData) => {
+                assert.isNull(err, 'Unexpected error occured');
+
+                couch.update(dbName, {
+                    _id: id,
+                    _rev: resData.data.rev,
+                    field: 'new sample data'
+                }, (err, resData) => {
+                    assert.isNull(err, 'Unexpected error occured');
+                    assert.strictEqual(resData.data.id, id, 'ID must be the same document');
+                    assert.strictEqual(resData.status, 201, 'Status is not equal 201');
+
+                    done();
+                });
+            });
         });
     });
 });
@@ -53,20 +160,6 @@ describe('node-couchdb tests', () => {
 // 
 
 // var commonTest = function (test, cacheAPI) {
-// 			couch.insert(dbName, {}, function (err, resData) {
-// 				test.strictEqual(err, null, err);
-
-// 				var docId = resData.data.id;
-
-// 				couch.get(dbName, docId, function (err, resData) {
-// 					test.strictEqual(err, null, err);
-
-// 					test.strictEqual(resData.status, 200, "Result status code is not 200");
-// 					test.equal(typeof resData, "object", "Result is not an object");
-// 					test.ok(!!resData.data, "Result data is missing");
-// 					test.ok(!!resData.status, "Result status is missing");
-// 					test.ok(!!resData.headers, "Result headers missing");
-// 					test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
 
 // 					// timeout is used because we do not wait for cache.set() callback
 // 					setTimeout(function () {
@@ -80,12 +173,6 @@ describe('node-couchdb tests', () => {
 // 							test.ok(!!resData.headers, "Result headers missing");
 // 							test.equal(Object.keys(resData).length, 3, "Wrong number of resData fields");
 
-// 							couch.dropDatabase("sample", function (err) {
-//                                 test.ok(!!err, true, 'Expected error is not met');
-//                                 test.strictEqual(err.code, 'EDBMISSING', 'Expected EDBMISSING error is not met');
-
-//                                 test.done();
-//                             });
 // 						});
 // 					}, 1000);
 // 				});
@@ -178,59 +265,5 @@ describe('node-couchdb tests', () => {
 // 		memcacheClient.connect();
 // 	},
 
-//     issue_5: function (test) {
-//         test.expect(4);
 
-//         var couch = new nodeCouchDB("localhost", 5984);
-//         couch.listDatabases(function (err, dbs) {
-//             test.strictEqual(err, null, err);
-//             test.strictEqual(Array.isArray(dbs), true, 'dbs must be an array');
-
-//             var types = dbs.reduce(function (types, db) {
-//                 var type = typeof db;
-
-//                 if (types.indexOf(type) === -1) {
-//                     types.push(type);
-//                 }
-
-//                 return types;
-//             }, []);
-
-//             test.strictEqual(types.length, 1, 'must contain only one type');
-//             test.strictEqual(types[0], 'string', 'it must be a string');
-
-//             test.done();
-//         });
-//     },
-
-//     issue_9: function (test) {
-//         test.expect(5);
-
-//         var couch = new nodeCouchDB("localhost", 5984);
-//         var dbName = "sample_" + Date.now();
-
-//         couch.createDatabase(dbName, function (err) {
-//             test.strictEqual(err, null, err);
-
-//             var doc = {};
-//             var id = 'http://example.org/';
-//             doc._id = id;
-
-//             couch.insert(dbName, doc, function (err, resData) {
-//                 test.strictEqual(err, null, err);
-
-//                 couch.update(dbName, {
-//                     _id: id,
-//                     _rev: resData.data.rev,
-//                     field: "new sample data"
-//                 }, function (err, resData) {
-//                     test.strictEqual(err, null, err);
-//                     test.strictEqual(resData.data.id, id, 'must be the same document');
-//                     test.strictEqual(resData.status, 201, 'status must be equal 201');
-
-//                     test.done();
-//                 });
-//             });
-//         });
-//     }
 // };
