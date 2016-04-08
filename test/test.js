@@ -78,7 +78,7 @@ describe('node-couchdb tests', () => {
                 assert.isObject(resData, 'Result is not an object');
                 assert.isObject(resData.data, 'Result data is not an object');
                 assert.isString(resData.data.id, 'ID is not a string');
-                assert.match(resData.data.id, /^[a-z0-9]{40}$/, 'ID is not valid');
+                assert.match(resData.data.id, /^[a-z0-9]+$/, 'ID is not valid');
 
                 done();
             });
