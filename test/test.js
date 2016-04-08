@@ -71,7 +71,7 @@ describe('node-couchdb tests', () => {
 
     it('should insert documents', done => {
         couch.createDatabase(dbName, err => {
-            assert.isNotNull(err, 'Error was expected but nothing happened');
+            assert.isNull(err, 'Unexpected error occured');
 
             couch.insert(dbName, {}, (err, resData) => {
                 assert.isNull(err, 'Unexpected error occured');
@@ -87,7 +87,7 @@ describe('node-couchdb tests', () => {
 
     it('should get expected document', done => {
         couch.createDatabase(dbName, err => {
-            assert.isNotNull(err, 'Error was expected but nothing happened');
+            assert.isNull(err, 'Unexpected error occured');
 
             couch.insert(dbName, {}, (err, resData) => {
                 assert.isNull(err, 'Unexpected error occured');
