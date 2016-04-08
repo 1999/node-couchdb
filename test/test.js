@@ -1,7 +1,7 @@
 'use strict';
 
 const {assert} = require('chai');
-const nodeCouchDb = require('../');
+const nodeCouchDb = require('../lib/node-couchdb');
 
 describe('node-couchdb tests', () => {
     let dbName;
