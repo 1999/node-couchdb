@@ -20,6 +20,11 @@
     "example": "examples"
   },
   "scripts": {
+    "prepublish": "npm run release:node-0.10 && npm run release:node-0.12 && npm run release:node-4 && npm run release:node-5",
+    "release:node-0.10": "./node_modules/.bin/babel lib/node-couchdb.js --no-babelrc --out-file dist/node-0.10.js --presets es2015",
+    "release:node-0.12": "exit 1",
+    "release:node-4": "exit 1",
+    "release:node-5": "",
     "test": "./node_modules/.bin/mocha --compilers js:babel-register --timeout 30000 --slow 30000 test/"
   },
   "keywords": [
