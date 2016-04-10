@@ -112,3 +112,6 @@ couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
 ```
 
 ```couch.createDatabase()```, ```couch.dropDatabase()``` and ```couch.listDatabases()``` are also available. Check out the [sources](https://github.com/1999/node-couchdb/blob/master/lib/node-couchdb.js) for more info.
+
+## Plugins
+https://www.npmjs.com/browse/keyword/node-couchdb-plugin
