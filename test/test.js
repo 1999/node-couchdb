@@ -2,6 +2,7 @@
 
 const {assert} = require('chai');
 const nodeCouchDb = require('../lib/node-couchdb');
+const noop = function () {}
 
 describe('node-couchdb tests', () => {
     let dbName;
@@ -9,151 +10,168 @@ describe('node-couchdb tests', () => {
 
     beforeEach(() => {
         dbName = `sample${Date.now()}`;
-        couch = new nodeCouchDb('127.0.0.1', 5984);
+        couch = new nodeCouchDb;
     });
 
-    afterEach(done => {
-        couch.dropDatabase(dbName, () => {
-            done();
+    afterEach(() => couch.dropDatabase(dbName).catch(noop));
+
+    it('should expose expected API', () => {
+
+    });
+
+    it('should list all databases', () => {
+        const promise = couch.listDatabases();
+        assert.instanceOf(promise, Promise, 'listDatabases() result is not a promise');
+
+        return promise.then(dbs => {
+            assert.instanceOf(dbs, Array, 'listDatabases() resolved data is not an array');
         });
     });
 
-    it('should create database', done => {
-        couch.createDatabase(dbName, err => {
-            assert.isNull(err, 'Unexpected error occured');
-            done();
-        });
-    });
-
-    it('should fail with EDBEXISTS if database exists', done => {
-        couch.createDatabase(dbName, err => {
-            assert.isNull(err, 'Unexpected error occured');
-
-            couch.createDatabase(dbName, err => {
-                assert.isNotNull(err, 'Error was expected but nothing happened');
-                assert.instanceOf(err, Error, 'err is not an instance of Error');
-                assert.strictEqual(err.code, 'EDBEXISTS', 'err code is not EDBEXISTS');
-
-                done();
+    it('should list all databases and the new one', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.listDatabases())
+            .then(dbs => {
+                assert.include(dbs, dbName, 'databases list doesn\'t contain created database');
             });
-        });
     });
 
-    it('should drop database', done => {
-        couch.createDatabase(dbName, err => {
-            assert.isNull(err, 'Unexpected error occured');
+    // it('should create database', done => {
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNull(err, 'Unexpected error occured');
+    //         done();
+    //     });
+    // });
 
-            couch.dropDatabase(dbName, err => {
-                assert.isNull(err, 'Unexpected error occured');
-                done();
-            });
-        });
-    });
+    // it('should fail with EDBEXISTS if database exists', done => {
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNull(err, 'Unexpected error occured');
 
-    it('should fail with EDBMISSING if database with this name doesn\'t exist', done => {
-        couch.dropDatabase(dbName, err => {
-            assert.isNotNull(err, 'Error was expected but nothing happened');
-            assert.instanceOf(err, Error, 'err is not an instance of Error');
-            assert.strictEqual(err.code, 'EDBMISSING', 'err code is not EDBMISSING');
+    //         couch.createDatabase(dbName, err => {
+    //             assert.isNotNull(err, 'Error was expected but nothing happened');
+    //             assert.instanceOf(err, Error, 'err is not an instance of Error');
+    //             assert.strictEqual(err.code, 'EDBEXISTS', 'err code is not EDBEXISTS');
 
-            done();
-        });
-    });
+    //             done();
+    //         });
+    //     });
+    // });
 
-    it('should fail if CouchDB server is unavailable', done => {
-        let couch = new nodeCouchDb('127.0.0.2', 80);
+    // it('should drop database', done => {
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNull(err, 'Unexpected error occured');
 
-        couch.createDatabase(dbName, err => {
-            assert.isNotNull(err, 'Error was expected but nothing happened');
-            done();
-        });
-    });
+    //         couch.dropDatabase(dbName, err => {
+    //             assert.isNull(err, 'Unexpected error occured');
+    //             done();
+    //         });
+    //     });
+    // });
 
-    it('should insert documents', done => {
-        couch.createDatabase(dbName, err => {
-            assert.isNull(err, 'Unexpected error occured');
+    // it('should fail with EDBMISSING if database with this name doesn\'t exist', done => {
+    //     couch.dropDatabase(dbName, err => {
+    //         assert.isNotNull(err, 'Error was expected but nothing happened');
+    //         assert.instanceOf(err, Error, 'err is not an instance of Error');
+    //         assert.strictEqual(err.code, 'EDBMISSING', 'err code is not EDBMISSING');
 
-            couch.insert(dbName, {}, (err, resData) => {
-                assert.isNull(err, 'Unexpected error occured');
-                assert.isObject(resData, 'Result is not an object');
-                assert.isObject(resData.data, 'Result data is not an object');
-                assert.isString(resData.data.id, 'ID is not a string');
-                assert.match(resData.data.id, /^[a-z0-9]+$/, 'ID is not valid');
+    //         done();
+    //     });
+    // });
 
-                done();
-            });
-        });
-    });
+    // it('should fail if CouchDB server is unavailable', done => {
+    //     let couch = new nodeCouchDb('127.0.0.2', 80);
 
-    it('should get expected document', done => {
-        couch.createDatabase(dbName, err => {
-            assert.isNull(err, 'Unexpected error occured');
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNotNull(err, 'Error was expected but nothing happened');
+    //         done();
+    //     });
+    // });
 
-            couch.insert(dbName, {}, (err, resData) => {
-                assert.isNull(err, 'Unexpected error occured');
-                const docId = resData.data.id;
+    // it('should insert documents', done => {
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNull(err, 'Unexpected error occured');
 
-                couch.get(dbName, docId, (err, resData) => {
-                    assert.isNull(err, 'Unexpected error occured');
-                    assert.isObject(resData, 'Result is not an object');
-                    assert.strictEqual(resData.status, 200, 'Result status code is not 200');
-                    assert.isObject(resData.data, 'Document is missing');
-                    assert.isObject(resData.headers, 'Headers are missing');
-                    assert.strictEqual(Object.keys(resData).length, 3, 'Wrong number of result fields');
+    //         couch.insert(dbName, {}, (err, resData) => {
+    //             assert.isNull(err, 'Unexpected error occured');
+    //             assert.isObject(resData, 'Result is not an object');
+    //             assert.isObject(resData.data, 'Result data is not an object');
+    //             assert.isString(resData.data.id, 'ID is not a string');
+    //             assert.match(resData.data.id, /^[a-z0-9]+$/, 'ID is not valid');
 
-                    done();
-                });
-            });
-        });
-    });
+    //             done();
+    //         });
+    //     });
+    // });
 
-    it('listDatabase should not crash when parsing result', done => {
-        couch.listDatabases((err, dbs) => {
-            assert.isNull(err, 'Unexpected error occured');
-            assert.instanceOf(dbs, Array, 'dbs variable is not an Array instance');
+    // it('should get expected document', done => {
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNull(err, 'Unexpected error occured');
 
-            const types = dbs.reduce((memo, db) => {
-                const type = typeof db;
+    //         couch.insert(dbName, {}, (err, resData) => {
+    //             assert.isNull(err, 'Unexpected error occured');
+    //             const docId = resData.data.id;
 
-                if (!memo.includes(type)) {
-                    memo.push(type);
-                }
+    //             couch.get(dbName, docId, (err, resData) => {
+    //                 assert.isNull(err, 'Unexpected error occured');
+    //                 assert.isObject(resData, 'Result is not an object');
+    //                 assert.strictEqual(resData.status, 200, 'Result status code is not 200');
+    //                 assert.isObject(resData.data, 'Document is missing');
+    //                 assert.isObject(resData.headers, 'Headers are missing');
+    //                 assert.strictEqual(Object.keys(resData).length, 3, 'Wrong number of result fields');
 
-                return memo;
-            }, []);
+    //                 done();
+    //             });
+    //         });
+    //     });
+    // });
 
-            assert.strictEqual(types.length, 1, 'More than one type is listed among dbs');
-            assert.strictEqual(types[0], 'string', 'Type is not a string');
+    // it('listDatabase should not crash when parsing result', done => {
+    //     couch.listDatabases((err, dbs) => {
+    //         assert.isNull(err, 'Unexpected error occured');
+    //         assert.instanceOf(dbs, Array, 'dbs variable is not an Array instance');
 
-            done();
-        });
-    });
+    //         const types = dbs.reduce((memo, db) => {
+    //             const type = typeof db;
 
-    it('should not encode startkey_docid as JSON', done => {
-        couch.createDatabase(dbName, err => {
-            assert.isNull(err, 'Unexpected error occured');
+    //             if (!memo.includes(type)) {
+    //                 memo.push(type);
+    //             }
 
-            const doc = {};
-            const id = 'http://example.org/';
-            doc._id = id;
+    //             return memo;
+    //         }, []);
 
-            couch.insert(dbName, doc, (err, resData) => {
-                assert.isNull(err, 'Unexpected error occured');
+    //         assert.strictEqual(types.length, 1, 'More than one type is listed among dbs');
+    //         assert.strictEqual(types[0], 'string', 'Type is not a string');
 
-                couch.update(dbName, {
-                    _id: id,
-                    _rev: resData.data.rev,
-                    field: 'new sample data'
-                }, (err, resData) => {
-                    assert.isNull(err, 'Unexpected error occured');
-                    assert.strictEqual(resData.data.id, id, 'ID must be the same document');
-                    assert.strictEqual(resData.status, 201, 'Status is not equal 201');
+    //         done();
+    //     });
+    // });
 
-                    done();
-                });
-            });
-        });
-    });
+    // it('should not encode startkey_docid as JSON', done => {
+    //     couch.createDatabase(dbName, err => {
+    //         assert.isNull(err, 'Unexpected error occured');
+
+    //         const doc = {};
+    //         const id = 'http://example.org/';
+    //         doc._id = id;
+
+    //         couch.insert(dbName, doc, (err, resData) => {
+    //             assert.isNull(err, 'Unexpected error occured');
+
+    //             couch.update(dbName, {
+    //                 _id: id,
+    //                 _rev: resData.data.rev,
+    //                 field: 'new sample data'
+    //             }, (err, resData) => {
+    //                 assert.isNull(err, 'Unexpected error occured');
+    //                 assert.strictEqual(resData.data.id, id, 'ID must be the same document');
+    //                 assert.strictEqual(resData.status, 201, 'Status is not equal 201');
+
+    //                 done();
+    //             });
+    //         });
+    //     });
+    // });
 });
 
 
