@@ -17,9 +17,9 @@
     "url": "https://github.com/1999/node-couchdb/issues"
   },
   "scripts": {
-    "prepublish": "npm run release:node-0.10 && npm run release:node-0.12 && npm run release:node-4 && npm run release:node-5",
-    "release:legacy": "./node_modules/.bin/babel lib/node-couchdb.js --out-file dist/legacy.js --presets es2015",
-    "release:es2015": "./node_modules/.bin/babel lib/node-couchdb.js --out-file dist/es2015.js --plugins array-includes,transform-es2015-spread,transform-es2015-parameters,transform-es2015-destructuring",
+    "prepublish": "npm run release:legacy && npm run release:es2015",
+    "release:legacy": "./node_modules/.bin/babel lib/node-couchdb.js --no-babelrc --out-file dist/legacy.js --presets es2015",
+    "release:es2015": "./node_modules/.bin/babel lib/node-couchdb.js --no-babelrc --out-file dist/es2015.js --plugins array-includes,transform-es2015-spread,transform-es2015-parameters,transform-es2015-destructuring",
     "test": "./node_modules/.bin/mocha --compilers js:babel-register --timeout 30000 --slow 30000 test/"
   },
   "keywords": [
