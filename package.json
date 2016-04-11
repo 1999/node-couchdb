@@ -20,7 +20,7 @@
     "prepublish": "npm run release:legacy && npm run release:es2015",
     "release:legacy": "./node_modules/.bin/babel lib/node-couchdb.js --no-babelrc --out-file dist/legacy.js --presets es2015",
     "release:es2015": "./node_modules/.bin/babel lib/node-couchdb.js --no-babelrc --out-file dist/es2015.js --plugins array-includes,transform-es2015-spread,transform-es2015-parameters,transform-es2015-destructuring",
-    "test": "./node_modules/.bin/mocha --compilers js:babel-register --timeout 30000 --slow 30000 test/"
+    "test": "./node_modules/.bin/mocha --compilers js:babel-register --timeout 10000 --slow 10000 test/"
   },
   "keywords": [
     "couchdb",
