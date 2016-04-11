@@ -1,8 +1,11 @@
 'use strict';
 
-const {assert} = require('chai');
-const nodeCouchDb = require('../lib/node-couchdb');
+import {assert} from 'chai';
+import memoryCache from 'node-couchdb-plugin-memory';
+import nodeCouchDb from '../lib/node-couchdb';
+
 const noop = function () {}
+const cache = new memoryCache;
 
 describe('node-couchdb tests', () => {
     let dbName;
@@ -16,7 +19,42 @@ describe('node-couchdb tests', () => {
     afterEach(() => couch.dropDatabase(dbName).catch(noop));
 
     it('should expose expected API', () => {
+        assert.typeOf(nodeCouchDb, 'function', 'exported object is not a function');
 
+        for (let method of [
+            'useCache',
+            'listDatabases', 'createDatabase', 'dropDatabase',
+            'insert', 'update', 'del', 'get',
+            'uniqid'
+        ]) {
+            assert.typeOf(couch[method], 'function', `instance[${method}] is not a function`);
+        }
+    });
+
+    it('should construct NodeCouchDb instance with different arguments', () => {
+        const couch1 = new nodeCouchDb;
+        assert.strictEqual(couch1._baseUrl, 'http://127.0.0.1:5984');
+        assert.isNull(couch1._cache);
+
+        const couch2 = new nodeCouchDb({});
+        assert.strictEqual(couch2._baseUrl, 'http://127.0.0.1:5984');
+        assert.isNull(couch2._cache);
+
+        const couch3 = new nodeCouchDb({port: 82});
+        assert.strictEqual(couch3._baseUrl, 'http://127.0.0.1:82');
+        assert.isNull(couch3._cache);
+
+        const couch4 = new nodeCouchDb({cache, host: 'example.com'});
+        assert.strictEqual(couch4._baseUrl, 'http://example.com:5984');
+        assert.strictEqual(couch4._cache, cache);
+    });
+
+    it('should replace cache object', () => {
+        couch.useCache(null);
+        assert.isNull(couch._cache);
+
+        couch.useCache(cache);
+        assert.strictEqual(couch._cache, cache);
     });
 
     it('should list all databases', () => {

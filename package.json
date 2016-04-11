@@ -45,7 +45,7 @@
     "babel-register": "^6.7.2",
     "chai": "^3.5.0",
     "mocha": "^2.4.5",
-    "node-couchdb-plugin-memory": "0.0.1"
+    "node-couchdb-plugin-memory": "0.0.2"
   },
   "license": "MIT",
   "engines": {
