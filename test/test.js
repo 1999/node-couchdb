@@ -57,6 +57,24 @@ describe('node-couchdb tests', () => {
         assert.strictEqual(couch._cache, cache);
     });
 
+    it('should create database', () => {
+        const promise = couch.createDatabase(dbName);
+        assert.instanceOf(promise, Promise, 'createDatabase() result is not a promise');
+
+        return promise;
+    });
+
+    it('should reject with EDBEXISTS is database already exists', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.createDatabase(dbName))
+            .then(() => {
+                throw new Error('Second createDatabase() call didn\'t fail')
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EDBEXISTS');
+            });
+    });
+
     it('should list all databases', () => {
         const promise = couch.listDatabases();
         assert.instanceOf(promise, Promise, 'listDatabases() result is not a promise');
@@ -73,6 +91,8 @@ describe('node-couchdb tests', () => {
                 assert.include(dbs, dbName, 'databases list doesn\'t contain created database');
             });
     });
+
+
 
     // it('should create database', done => {
     //     couch.createDatabase(dbName, err => {
