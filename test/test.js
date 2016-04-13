@@ -160,6 +160,94 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    it('should return promise for update operation', () => {
+        const promise = couch.update(dbName, {});
+        assert.instanceOf(promise, Promise, 'update() result is not a promise');
+    });
+
+    it('should return rejected promise if either _id or _rev field is missing', () => {
+        return couch.update(dbName, {_id: 123})
+            .then(() => {
+                throw new Error('_rev was missing but update() op promise has been resolved');
+            }, err => {
+                assert.instanceOf(err, Error, 'err is not an instance of Error');
+                assert.strictEqual(err.code, 'EFIELDMISSING', 'err code is not EFIELDMISSING');
+            })
+            .then(() => couch.update(dbName, {_rev: 1}))
+            .then(() => {
+                throw new Error('_id was missing but update() op promise has been resolved');
+            }, err => {
+                assert.instanceOf(err, Error, 'err is not an instance of Error');
+                assert.strictEqual(err.code, 'EFIELDMISSING', 'err code is not EFIELDMISSING');
+            });
+    });
+
+    it('should update documents', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, {}))
+            .then(resData => {
+                assert.isObject(resData, 'result is not an object');
+                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.isObject(resData.data, 'result data is not an object');
+                assert.isString(resData.data.id, 'ID is not a string');
+                assert.match(resData.data.id, /^[a-z0-9]+$/, 'ID is not valid');
+                assert.isNumber(resData.status, 'status is not a number')
+            });
+    });
+
+    it('should return promise for del operation', () => {
+        const promise = couch.del(dbName, 'docId', 1);
+        assert.instanceOf(promise, Promise, 'del() result is not a promise');
+    });
+
+    // EDOCMISSING - get
+    // EUNKNOWN - get
+
+    it('should delete documents', () => {
+        let docId;
+        let docRevision;
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, {}))
+            .then(({data}) => {
+                docId = data._id;
+            })
+            .then(() => couch.get(dbName, docId))
+            .then(({data, headers, status}) => {
+                console.log(data)
+                console.log(headers)
+                console.log(status)
+            })
+            .then(() => couch.del(dbName, docId, docRevision))
+            .then(() => couch.get(dbName, docId))
+            .then(({doc}) => {
+                assert(doc).not_exists;
+            });
+    });
+
+    it('should return promise for uniqid operation', () => {
+        const promise1 = couch.uniqid();
+        assert.instanceOf(promise1, Promise, 'uniqid() result is not a promise');
+
+        const promise2 = couch.uniqid(10);
+        assert.instanceOf(promise2, Promise, 'uniqid(N) result is not a promise');
+    });
+
+    it('should return new unique id for uniqid()', () => {
+        return couch.uniqid().then(ids => {
+            assert.instanceOf(ids, Array, 'ids is not an array');
+            assert.lengthOf(ids, 1, 'ids length is not 1');
+            assert.match(ids[0], /^[a-z0-9]+$/, 'ID is not valid');
+        });
+    });
+
+    it('should return N unique ids for uniqid(N)', () => {
+        return couch.uniqid(10).then(ids => {
+            assert.lengthOf(ids, 10, 'ids length is not 1');
+            ids.forEach(id => assert.match(id, /^[a-z0-9]+$/, 'ID is not valid'));
+        });
+    });
+
 
 
     
