@@ -177,8 +177,6 @@ describe('node-couchdb tests', () => {
     });
 
     it('should return rejected promise if either _id or _rev field is missing', () => {
-        throw new Error('IMPLEMENTATION_ERR');
-
         return couch.createDatabase(dbName)
             .then(() => couch.update(dbName, {_id: 123}))
             .then(() => {
@@ -186,13 +184,13 @@ describe('node-couchdb tests', () => {
             }, err => {
                 assert.instanceOf(err, Error, 'err is not an instance of Error');
                 assert.strictEqual(err.code, 'EFIELDMISSING', 'err code is not EFIELDMISSING');
-            })
-            .then(() => couch.update(dbName, {_rev: 1}))
-            .then(() => {
-                throw new Error('_id was missing but update() op promise has been resolved');
-            }, err => {
-                assert.instanceOf(err, Error, 'err is not an instance of Error');
-                assert.strictEqual(err.code, 'EFIELDMISSING', 'err code is not EFIELDMISSING');
+
+                return couch.update(dbName, {_rev: 1}).then(() => {
+                    throw new Error('_id was missing but update() op promise has been resolved');
+                }, err => {
+                    assert.instanceOf(err, Error, 'err is not an instance of Error');
+                    assert.strictEqual(err.code, 'EFIELDMISSING', 'err code is not EFIELDMISSING');
+                });
             });
     });
 
@@ -230,12 +228,13 @@ describe('node-couchdb tests', () => {
             })
             .then(() => couch.get(dbName, docId))
             .then(() => couch.del(dbName, docId, docRevision))
-            .then(() => couch.get(dbName, docId))
             .then(() => {
-                throw new Error('Fetching deleted document ended with resolved promise, but rejected one was expected');
-            }, err => {
-                assert.instanceOf(err, Error, 'err is not an Error instance');
-                assert.instanceOf(err.code, 'EDOCMISSING');
+                return couch.get(dbName, docId).then(res => {
+                    throw new Error('Fetching deleted document ended with resolved promise, but rejected one was expected');
+                }, err => {
+                    assert.instanceOf(err, Error, 'err is not an Error instance');
+                    assert.instanceOf(err.code, 'EDOCMISSING');
+                });
             });
     });
 
@@ -278,6 +277,11 @@ describe('node-couchdb tests', () => {
 
         return couch.createDatabase(dbName)
             .then(() => couch.insert(dbName, doc))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.isObject(headers);
+                assert.strictEqual(status, 201);
+            })
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 200);
@@ -301,14 +305,15 @@ describe('node-couchdb tests', () => {
         }
 
         return couch.createDatabase(dbName)
+            .then(() => couch.useCache(cache))
             .then(() => couch.insert(dbName, doc))
             .then(() => couch.get(dbName, doc._id))
             .then(() => delay(1000)) // cache.set doesn't block get operation
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 304);
-                assert.isObject(headers);
-                assert.isObject(data);
+                assert.isObject(headers, 'headers data is not an object');
+                assert.isObject(data, 'data is empty');
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
     });
