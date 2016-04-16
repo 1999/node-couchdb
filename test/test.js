@@ -227,12 +227,12 @@ describe('node-couchdb tests', () => {
                 docRevision = data.rev;
             })
             .then(() => couch.del(dbName, docId, docRevision))
-            .then(() => {
+            .then((res) => {
                 return couch.get(dbName, docId).then(res => {
                     throw new Error('Fetching deleted document ended with resolved promise, but rejected one was expected');
                 }, err => {
                     assert.instanceOf(err, Error, 'err is not an Error instance');
-                    assert.instanceOf(err.code, 'EDOCMISSING');
+                    assert.strictEqual(err.code, 'EDOCMISSING');
                 });
             });
     });
