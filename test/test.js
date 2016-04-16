@@ -226,7 +226,6 @@ describe('node-couchdb tests', () => {
                 docId = data.id;
                 docRevision = data.rev;
             })
-            .then(() => couch.get(dbName, docId))
             .then(() => couch.del(dbName, docId, docRevision))
             .then(() => {
                 return couch.get(dbName, docId).then(res => {
@@ -235,6 +234,17 @@ describe('node-couchdb tests', () => {
                     assert.instanceOf(err, Error, 'err is not an Error instance');
                     assert.instanceOf(err.code, 'EDOCMISSING');
                 });
+            });
+    });
+
+    it('should reject del promise with EDOCMISSING code if document is missing', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.del(dbName, 'some_id', '1'))
+            .then(() => {
+                throw new Error('Del operation was resolved but reject was expected');
+            }, err => {
+                assert.instanceOf(err, Error, 'err is not an Error instance');
+                assert.strictEqual(err.code, 'EDOCMISSING');
             });
     });
 
