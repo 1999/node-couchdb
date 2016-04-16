@@ -133,7 +133,7 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    it('listDatabase should not crash when parsing result', () => {
+    it('should not crash when parsing listDatabases() result', () => {
         return couch.listDatabases(dbs => {
             const types = dbs.reduce((memo, db) => {
                 const type = typeof db;
