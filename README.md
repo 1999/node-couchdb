@@ -1,117 +1,147 @@
 # node-couchdb [![Build Status](https://secure.travis-ci.org/1999/node-couchdb.svg?branch=master)](http://travis-ci.org/1999/node-couchdb) [![Dependency Status](https://david-dm.org/1999/node-couchdb.svg)](https://david-dm.org/1999/node-couchdb) [![devDependency Status](https://david-dm.org/1999/node-couchdb/dev-status.svg)](https://david-dm.org/1999/node-couchdb#info=devDependencies)
 
-[CouchDB](http://couchdb.apache.org/) is amazing and easy-to-use NoSQL document-oriented database. This package provides an easy way to interact with CouchDB using ETags and your preferred cache layer (memcached, file system, memory, etc). Check out [examples](https://github.com/1999/node-couchdb/tree/master/examples) folder for more info.
+`node-couchdb` package provides an easy way to interact with CouchDB using preferred cache layer:
+
+ * [process memory](https://www.npmjs.com/package/node-couchdb-plugin-memory)
+ * [memcached](https://www.npmjs.com/package/node-couchdb-plugin-memcached)
+ * place for your plugin :)
 
 # Installation
 ``` bash
-npm install node-couchdb
+npm install node-couchdb --save
 ```
-or
-``` bash
-npm install --dev
-```
-to run examples
 
 # API
-How to start
-``` javascript
-// use memory caching
-var nodeCouchDB = require("node-couchdb");
-var couch = new nodeCouchDB("localhost", 5984);
+## Constructor
+`node-couchdb` exports constructor, which accepts one object argument with properties `host` (127.0.0.1 by default), `port` (5984 by default), `protocol` (http by default), `cache` (one of plugins, null by default) and `timeout` for all requests (5000 by default). All object fields are optional.
 
-// even simplier, but you can't set host and port this way
-var couch = require("node-couchdb");
+```javascript
+const NodeCouchDb = require('node-couchdb');
 
-// use memcached with "memcache" NPM package
-var nodeCouchDB = require("node-couchdb");
-var memcacheClient = require("memcache").Client(11211, "localhost");
-memcacheClient.on("connect", function () {
-	memcacheClient.invalidate = function () {};
-	var couch = new nodeCouchDB("localhost", 5984, memcacheClient);
-});
+// node-couchdb instance with default options
+const couch = new NodeCouchDb();
 
-memcacheClient.connect();
-```
+// node-couchdb instance with Memcached
+const couchWithMemcache = new NodeCouchDb({cache: require('node-couchdb-plugin-memcached')});
 
-Fetch document by its id
-``` javascript
-couch.get("databaseName", "some_document_id", function (err, resData) {
-	if (err)
-		return console.error(err);
-
-	console.dir(resData);
+// node-couchdb instance talking to external service
+const couchExternal = new NodeCouchDb({
+    host: 'couchdb.external.service',
+    protocol: 'https',
+    port: 6984
 });
 ```
 
-Insert a document
-``` javascript
-couch.insert("databaseName", {
-	_id: "document_id",
-	field: ["sample", "data", true]
-}, function (err, resData) {
-	if (err)
-		return console.error(err);
+All node-couchdb methods return Promise instances which resolve if everything works as expected and reject with Error instance which usually has `code` and `body` fields. See package source and tests for more info.
 
-	console.dir(resData)
+## Create database
+```javascript
+couch.createDatabase(dbName).then(() => {...}, err => {
+    // request error occured
 });
 ```
 
-Update a document
-``` javascript
-// note that "doc" must have both "_id" and "_rev" fields
-couch.update("databaseName", {
-	_id: "document_id",
-	_rev: "1-xxx"
-	field: "new sample data",
-	field2: 1
-}, function (err, resData) {
-	if (err)
-		return console.error(err);
-
-	console.dir(resData);
+## Drop database
+```javascript
+couch.dropDatabase(dbName).then(() => {...}, err => {
+    // request error occured
 });
 ```
 
-Delete a document
-``` javascript
-couch.del("databaseName", "some_document_id", "document_revision", function (err, resData) {
-	if (err)
-		return console.error(err);
-
-	console.dir(resData);
+## List databases
+```javascript
+couch.listDatabases().then(dbs => dbs.map(...), err => {
+    // request error occured
 });
 ```
 
-Generate unique identifier(s)
-``` javascript
-couch.uniqid(1, function (err, ids) { // or even simplier: couch.uniqid(function (err, ids) {
-	if (err)
-		return console.error(err);
-
-	console.dir(ids);
+## Get document by its id
+```javascript
+couch.get("databaseName", "some_document_id").then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document is missing
+    // ...or err.code=EUNKNOWN if statusCode is unexpected
 });
 ```
 
-Fetch data by requesting a view
-``` javascript
-var dbName = "database";
-var startKey = ["Ann"];
-var endKey = ["George"];
-var viewUrl = "_design/list/_views/by_firstname";
-var queryOptions = {
-	startkey: startKey,
-	endkey: endKey
+## Get view results
+```javascript
+const dbName = "database";
+const startkey = ["Ann"];
+const endKey = ["George"];
+const viewUrl = "_design/list/_views/by_firstname";
+
+const queryOptions = {
+    startkey,
+    endkey
 };
 
-couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
-	if (err)
-		return console.error(err);
-
-	console.dir(resData)
+couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document is missing
+    // ...or err.code=EUNKNOWN if statusCode is unexpected
 });
 ```
 
-```couch.createDatabase()```, ```couch.dropDatabase()``` and ```couch.listDatabases()``` are also available. Check out the [sources](https://github.com/1999/node-couchdb/blob/master/lib/node-couchdb.js) for more info.
+## Insert a document
+```javascript
+couch.insert("databaseName", {
+    _id: "document_id",
+    field: ["sample", "data", true]
+}).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCCONFLICT if document with the same id already exists
+});
+```
 
-## Plugins
-https://www.npmjs.com/browse/keyword/node-couchdb-plugin
+## Update a document
+```javascript
+// note that "doc" must have both "_id" and "_rev" fields
+couch.update("databaseName", {
+    _id: "document_id",
+    _rev: "1-xxx"
+    field: "new sample data",
+    field2: 1
+}).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EFIELDMISSING if either _id or _rev fields are missing
+});
+```
+
+## Delete a document
+```javascript
+couch.del("databaseName", "some_document_id", "document_revision").then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document does not exist
+    // ...or err.code=EUNKNOWN if response status code is unexpected
+});
+```
+
+## Generate unique identifier(s)
+```javascript
+// get one unique id
+couch.uniqid().then(ids => ids[0]);
+
+// get N unique ids
+couch.uniqid(N).then(ids => ids.map(...));
+```

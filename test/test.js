@@ -170,6 +170,18 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    it('should reject insert promise with EDOCCONFLICT code if statusCode is unexpected', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, {_id: 'smth'}))
+            .then(() => couch.insert(dbName, {_id: 'smth'}))
+            .then(() => {
+                throw new Error('Insert operation was resolved but reject was expected');
+            }, err => {
+                assert.instanceOf(err, Error, 'err is not an Error instance');
+                assert.strictEqual(err.code, 'EDOCCONFLICT');
+            });
+    });
+
     // update() operations
     it('should return promise for update operation', () => {
         const promise = couch.update(dbName, {});
