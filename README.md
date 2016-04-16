@@ -22,7 +22,10 @@ const NodeCouchDb = require('node-couchdb');
 const couch = new NodeCouchDb();
 
 // node-couchdb instance with Memcached
-const couchWithMemcache = new NodeCouchDb({cache: require('node-couchdb-plugin-memcached')});
+const MemcacheNode = require('node-couchdb-plugin-memcached');
+const couchWithMemcache = new NodeCouchDb({
+    cache: new MemcacheNode
+});
 
 // node-couchdb instance talking to external service
 const couchExternal = new NodeCouchDb({
