@@ -340,6 +340,30 @@ describe('node-couchdb tests', () => {
     });
 
     it('should not encode startkey_docid as JSON', () => {
-        throw new Error('NOT_IMPLEMENTED');
+        const designDoc = {
+            _id: '_design/tmp',
+            language: 'javascript',
+            views: {
+                by_key: {
+                    map: 'function(doc) { emit(doc.key, doc) }'
+                }
+            }
+        };
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, designDoc))
+            .then(() => couch.insert(dbName, {key: 'A'}))
+            .then(() => couch.insert(dbName, {key: 'B'}))
+            .then(() => couch.insert(dbName, {key: 'C', _id: 'One'}))
+            .then(() => couch.insert(dbName, {key: 'C', _id: 'Two'}))
+            .then(() => couch.get(dbName, '_design/tmp/_view/by_key', {
+                // when two keys are equal, startkey_docid matters
+                // by passing startkey_docid we can decide where to start fetching document from
+                startkey_docid: 'Two',
+                startkey: 'C'
+            }))
+            .then(({data}) => {
+                assert.lengthOf(data.rows, 1, 'response contains wrong number of documents');
+            });
     });
 });
