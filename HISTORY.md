@@ -1,3 +1,15 @@
+# 1.0.0
+
+There had been problems with extending and support of `node-couchdb` since its first release due to its code. Tests were a bit messy and code was too old. Also there was an architecture problem with cache layers: internally they were acting really weird. `node-couchdb@1` was designed to be extremely simple to read and extend. Cache layers were renamed into plugins and separated from the package itself. Tests were rewritten in `mocha`. Library code was rewritten in ES2015.
+
+ * **breaking change**: `node-couchdb` is now ES2015-compatible: only node.js >= 4 is supported. If you're using node.js 0.10 or 0.12, `require('node-couchdb/dist/legacy')`, but it's not tested. You have been warned!
+ * **breaking change**: new API: package exports constructor with new arguments, all methods return promise instance
+ * **breaking change**: cache layers have been removed from the package into separate NPM packages: [memcached](https://www.npmjs.com/package/node-couchdb-plugin-memcached), [process memory](https://www.npmjs.com/package/node-couchdb-plugin-memory). If you're missing smth feel free to add a new one and publish it with `node-couchdb-plugin` keyword. Also send a PR to `node-couchdb` README about your plugin and it will be added to the list.
+ * **new**: promises can be rejected with Error instance which usually has `code` and `body` fields. Look tests and README for more examples
+ * **new**: all tests rewritten in `mocha` + many new tests introduced
+
+Note about writing your own node-couchdb-plugin: grab tests from `node-couchdb-plugin-memory` and enhance with your own. Package should export constructor and the prototype should have only three methods (set, get, invalidate), so it should be pretty simple to write tests for it.
+
 # 0.5.0
 
  * new: createDatabase invokes callback with EDBEXISTS error if database already exists
