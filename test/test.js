@@ -1,11 +1,15 @@
 'use strict';
 
 import {assert} from 'chai';
+import request from 'request';
 import memoryCache from 'node-couchdb-plugin-memory';
 import nodeCouchDb from '../lib/node-couchdb';
 
 const noop = function () {}
 const cache = new memoryCache;
+
+const AUTH_USER = 'some_login';
+const AUTH_PASS = 'secret_pass';
 
 describe('node-couchdb tests', () => {
     let dbName;
@@ -16,7 +20,26 @@ describe('node-couchdb tests', () => {
         couch = new nodeCouchDb;
     });
 
-    afterEach(() => couch.dropDatabase(dbName).catch(noop));
+    afterEach(done => {
+        const onFinish = () => done();
+
+        Promise.all([
+            // drop database if it was used
+            couch.dropDatabase(dbName).catch(noop),
+
+            // delete admin user if it was created
+            new Promise(resolve => {
+                request({
+                    url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
+                    method: 'DELETE',
+                    auth: {
+                        user: AUTH_USER,
+                        pass: AUTH_PASS
+                    }
+                }, resolve);
+            })
+        ]).then(onFinish).catch(onFinish);
+    });
 
     // common
     it('should expose expected API', () => {
@@ -376,6 +399,42 @@ describe('node-couchdb tests', () => {
             }))
             .then(({data}) => {
                 assert.lengthOf(data.rows, 1, 'response contains wrong number of documents');
+            });
+    });
+
+    // auth
+    // @see http://guide.couchdb.org/draft/security.html#authentication
+    // @see https://github.com/1999/node-couchdb/issues/4
+    it('should use basic auth for admin features', () => {
+        const createAdmin = new Promise((resolve, reject) => {
+            request.put({
+                url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
+                body: JSON.stringify(AUTH_PASS)
+            }, (err, res, body) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+
+        return createAdmin
+            .then(() => couch.createDatabase(dbName))
+            .then(() => {
+                throw new Error('admin party is off but createDatabase() op promise has been resolved');
+            }, err => {
+                assert.instanceOf(err, Error, 'err is not an instance of Error');
+                assert.strictEqual(err.code, 'ENOTADMIN', 'err code is not ENOTADMIN');
+
+                const couchAuth = new nodeCouchDb({
+                    auth: {
+                        user: AUTH_USER,
+                        pass: AUTH_PASS
+                    }
+                });
+
+                return couchAuth.createDatabase(dbName);
             });
     });
 });
