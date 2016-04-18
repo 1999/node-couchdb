@@ -13,7 +13,7 @@ npm install node-couchdb --save
 
 # API
 ## Constructor
-`node-couchdb` exports constructor, which accepts one object argument with properties `host` (127.0.0.1 by default), `port` (5984 by default), `protocol` (http by default), `cache` (one of plugins, null by default) and `timeout` for all requests (5000 by default). All object fields are optional.
+`node-couchdb` exports constructor, which accepts one object argument with properties `host` (127.0.0.1 by default), `port` (5984 by default), `protocol` (http by default), `cache` (one of plugins, null by default), `auth` (object with properties `{user, pass}`) and `timeout` for all requests (5000 by default). All object fields are optional.
 
 ```javascript
 const NodeCouchDb = require('node-couchdb');
@@ -32,6 +32,14 @@ const couchExternal = new NodeCouchDb({
     host: 'couchdb.external.service',
     protocol: 'https',
     port: 6984
+});
+
+// not admin party
+const couchAuth = new NodeCouchDb({
+    auth: {
+        user: 'login',
+        pass: 'secret'
+    }
 });
 ```
 

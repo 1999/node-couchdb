@@ -1,3 +1,7 @@
+# 1.1.0
+
+ * **new**: you can pass new `auth` field into node-couchdb constructor argument to support non-admin-party CouchDB mode. See [README](https://github.com/1999/node-couchdb#constructor) for more info.
+
 # 1.0.x
 
 There had been problems with extending and support of `node-couchdb` since its first release due to its code. Tests were a bit messy and code was too old. Also there was an architecture problem with cache layers: internally they were acting really weird. `node-couchdb@1` was designed to be extremely simple to read and extend. Cache layers were renamed into plugins and separated from the package itself. Tests were rewritten in `mocha`. Library code was rewritten in ES2015.
