@@ -82,13 +82,13 @@ couch.get("databaseName", "some_document_id").then(({data, headers, status}) => 
 ## Get view results
 ```javascript
 const dbName = "database";
-const startkey = ["Ann"];
+const startKey = ["Ann"];
 const endKey = ["George"];
-const viewUrl = "_design/list/_views/by_firstname";
+const viewUrl = "_design/list/_view/by_firstname";
 
 const queryOptions = {
-    startkey,
-    endkey
+    startKey,
+    endKey
 };
 
 couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
