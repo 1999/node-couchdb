@@ -94,6 +94,7 @@ describe('node-couchdb tests', () => {
     it('should return promise for createDatabase operation', () => {
         const promise = couch.createDatabase(dbName);
         assert.instanceOf(promise, Promise, 'createDatabase() result is not a promise');
+        return promise;
     });
 
     it('should create new database', () => {
@@ -117,8 +118,10 @@ describe('node-couchdb tests', () => {
 
     // dropDatabase() operations
     it('should return promise for dropDatabase operation', () => {
-        const promise = couch.dropDatabase(dbName);
+        const promise = couch.dropDatabase(dbName)
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'dropDatabase() result is not a promise');
+        return promise;
     });
 
     it('should fail with EDBMISSING if database with this name doesn\'t exist', () => {
@@ -147,6 +150,7 @@ describe('node-couchdb tests', () => {
     it('should return promise for listDatabases operation', () => {
         const promise = couch.listDatabases();
         assert.instanceOf(promise, Promise, 'listDatabases() result is not a promise');
+        return promise;
     });
 
     it('should list all databases', () => {
@@ -175,8 +179,10 @@ describe('node-couchdb tests', () => {
 
     // insert() operations
     it('should return promise for insert operation', () => {
-        const promise = couch.insert(dbName, {});
+        const promise = couch.insert(dbName, {})
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'insert() result is not a promise');
+        return promise;
     });
 
     it('should insert documents', () => {
@@ -207,8 +213,10 @@ describe('node-couchdb tests', () => {
 
     // update() operations
     it('should return promise for update operation', () => {
-        const promise = couch.update(dbName, {});
+        const promise = couch.update(dbName, {})
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'update() result is not a promise');
+        return promise;
     });
 
     it('should return rejected promise if either _id or _rev field is missing', () => {
@@ -247,8 +255,10 @@ describe('node-couchdb tests', () => {
 
     // del() operations
     it('should return promise for del operation', () => {
-        const promise = couch.del(dbName, 'docId', 1);
+        const promise = couch.del(dbName, 'docId', 1)
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'del() result is not a promise');
+        return promise;
     });
 
     it('should delete documents', () => {
@@ -309,8 +319,10 @@ describe('node-couchdb tests', () => {
 
     // get() operations
     it('should return promise for get operation', () => {
-        const promise = couch.get(dbName, 'smth');
+        const promise = couch.get(dbName, 'smth')
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'get() result is not a promise');
+        return promise;
     });
 
     it('should return inserted document', () => {
