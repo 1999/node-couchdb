@@ -27,7 +27,7 @@
     "nosql"
   ],
   "dependencies": {
-    "request": "2.70.0"
+    "request": "^2.79.0"
   },
   "devDependencies": {
     "babel-cli": "^6.7.5",
