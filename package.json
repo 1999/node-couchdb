@@ -6,6 +6,7 @@
   "description": "ES2015-compatible package to interact with CouchDB",
   "contributors": [
     "Eric Scouten",
+    "Pascal Vomhoff",
     "Peter Olson"
   ],
   "main": "./dist/es2015.js",
