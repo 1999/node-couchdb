@@ -486,7 +486,7 @@ describe('node-couchdb tests', () => {
                 if (err) {
                     return reject(err);
                 }
-                resolve(body, response.statusCode);
+                resolve();
             })
         })
     }
