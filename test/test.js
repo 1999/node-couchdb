@@ -92,7 +92,8 @@ describe('node-couchdb tests', () => {
 
     // createDatabase() operations
     it('should return promise for createDatabase operation', () => {
-        const promise = couch.createDatabase(dbName);
+        const promise = couch.createDatabase(dbName)
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'createDatabase() result is not a promise');
     });
 
@@ -104,7 +105,7 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    it('should reject with EDBEXISTS is database already exists', () => {
+    it('should reject with EDBEXISTS if database already exists', () => {
         return couch.createDatabase(dbName)
             .then(() => couch.createDatabase(dbName))
             .then(() => {
@@ -115,9 +116,21 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    it('should reject with EBADREQUEST if database name contains special character', () => {
+        dbName += '$§%&/'
+        return couch.createDatabase(dbName)
+            .then(() => {
+                throw new Error(`Creating of the database ${dbName} with special character didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EBADREQUEST');
+            });
+    });
+
     // dropDatabase() operations
     it('should return promise for dropDatabase operation', () => {
-        const promise = couch.dropDatabase(dbName);
+        const promise = couch.dropDatabase(dbName)
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'dropDatabase() result is not a promise');
     });
 
@@ -175,7 +188,8 @@ describe('node-couchdb tests', () => {
 
     // insert() operations
     it('should return promise for insert operation', () => {
-        const promise = couch.insert(dbName, {});
+        const promise = couch.insert(dbName, {})
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'insert() result is not a promise');
     });
 
@@ -204,10 +218,22 @@ describe('node-couchdb tests', () => {
                 assert.strictEqual(err.code, 'EDOCCONFLICT');
             });
     });
+    
+    it('should reject insert promise with EBADREQUEST if database name contains special character', () => {
+        dbName += '$§%&/'
+        return couch.insert(dbName)
+            .then(() => {
+                throw new Error(`Inserting into the database ${dbName} with special character didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EBADREQUEST');
+            });
+    });
 
     // update() operations
     it('should return promise for update operation', () => {
-        const promise = couch.update(dbName, {});
+        const promise = couch.update(dbName, {})
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'update() result is not a promise');
     });
 
@@ -245,9 +271,21 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    it('should reject update promise with EBADREQUEST if database name contains special character', () => {
+        dbName += '$§%&/'
+        return couch.insert(dbName)
+            .then(() => {
+                throw new Error(`Update document in the database ${dbName} with special character didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EBADREQUEST');
+            });
+    });
+
     // del() operations
     it('should return promise for del operation', () => {
-        const promise = couch.del(dbName, 'docId', 1);
+        const promise = couch.del(dbName, 'docId', 1)
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'del() result is not a promise');
     });
 
@@ -283,6 +321,17 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    it('should reject delete promise with EBADREQUEST if database name contains special character', () => {
+        dbName += '$§%&/'
+        return couch.del(dbName)
+            .then(() => {
+                throw new Error(`Deleting document in the database ${dbName} with special character didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EBADREQUEST');
+            });
+    });
+
     // uniqid() operations
     it('should return promise for uniqid operation', () => {
         const promise1 = couch.uniqid();
@@ -309,7 +358,8 @@ describe('node-couchdb tests', () => {
 
     // get() operations
     it('should return promise for get operation', () => {
-        const promise = couch.get(dbName, 'smth');
+        const promise = couch.get(dbName, 'smth')
+            .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'get() result is not a promise');
     });
 
@@ -402,11 +452,8 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    // auth
-    // @see http://guide.couchdb.org/draft/security.html#authentication
-    // @see https://github.com/1999/node-couchdb/issues/4
-    it('should use basic auth for admin features', () => {
-        const createAdmin = new Promise((resolve, reject) => {
+    function createAdmin() {
+        return new Promise((resolve, reject) => {
             request.put({
                 url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
                 body: JSON.stringify(AUTH_PASS)
@@ -418,8 +465,31 @@ describe('node-couchdb tests', () => {
                 }
             });
         });
+    }
 
-        return createAdmin
+    function addDbSecurity(dbName) {
+        return new Promise(function(resolve, reject) {
+            const opts = {
+                method: 'PUT',
+                url: `http://127.0.0.1:5984/${dbName}/_security`,
+                body: {"admins": { "names": ['somename'],"roles": []}, "members": {"names": ['somename'],"roles": []}},
+                json: true
+            };
+
+            request(opts, function(err, response, body) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            })
+        })
+    }
+
+    // auth
+    // @see http://guide.couchdb.org/draft/security.html#authentication
+    // @see https://github.com/1999/node-couchdb/issues/4
+    it('should use basic auth for admin features', () => {        
+        return createAdmin()
             .then(() => couch.createDatabase(dbName))
             .then(() => {
                 throw new Error('admin party is off but createDatabase() op promise has been resolved');
@@ -437,4 +507,45 @@ describe('node-couchdb tests', () => {
                 return couchAuth.createDatabase(dbName);
             });
     });
+
+    it('should reject insert promise with EUNAUTHORIZED if user is not logged in', () => {
+        return couch.createDatabase(dbName)
+            .then(() => addDbSecurity(dbName))
+            .then(() => createAdmin())
+            .then(() => couch.insert(dbName, {}))
+            .then(() => {
+                throw new Error(`Inserting into the database ${dbName} without auth didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EUNAUTHORIZED');
+            });
+    });
+
+
+    it('should reject update promise with EUNAUTHORIZED if user is not logged in', () => {
+        return couch.createDatabase(dbName)
+            .then(() => addDbSecurity(dbName))
+            .then(() => createAdmin())
+            .then(() => couch.update(dbName, {_id: 123, _rev: 1}))
+            .then(() => {
+                throw new Error(`Updating into the database ${dbName} without auth didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EUNAUTHORIZED');
+            });
+    });
+
+    it('should reject delete promise with EUNAUTHORIZED if user is not logged in', () => {
+        return couch.createDatabase(dbName)
+            .then(() => addDbSecurity(dbName))
+            .then(() => createAdmin())
+            .then(() => couch.del(dbName, 123, 1))
+            .then(() => {
+                throw new Error(`Deleting into the database ${dbName} without auth didn't fail`);
+            }, err => {
+                assert.instanceOf(err, Error, 'rejected error is not an instance of Error');
+                assert.strictEqual(err.code, 'EUNAUTHORIZED');
+            });
+    });
+
 });
