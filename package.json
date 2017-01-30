@@ -1,6 +1,6 @@
 {
   "name": "node-couchdb",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "homepage": "https://github.com/1999/node-couchdb",
   "author": "Dmitry Sorin <info@staypositive.ru>",
   "description": "ES2015-compatible package to interact with CouchDB",
