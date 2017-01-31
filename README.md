@@ -151,8 +151,15 @@ const selectorFilter = {
     }
 };
 
-function changeCallback (change){
-    // change is the changed row
+// This method will first be called with a null change and a context
+// The context that has an unsubscribe() method.
+function changeCallback (change, context) {
+    if (!change) {
+        // Store the context, and call context.unsubscribe() to release the socket.
+    }
+    else {
+        // change is the changed row
+    }
 };
 const parameters = {};
 
