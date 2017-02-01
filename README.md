@@ -124,6 +124,64 @@ couch.mango(dbName, mangoQuery, parameters).then(({data, headers, status}) => {
 });
 ```
 
+## Trigger A Design Update
+```javascript
+const update = {
+     firstname: 'Rita',
+     middlename: '__delete__'
+};
+
+couch.design_update('database', 'someDocId', 'default', 'partialUpdate', update).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document is missing
+    // ...or err.code=EUNKNOWN if statusCode is unexpected
+});
+```
+
+## Subscribe To Changes
+```javascript
+const dbName = "database";
+const mangoQuery = {
+    selector: {
+        $gte: {firstname: 'Ann'},
+        $lt: {firstname: 'George'}  
+    }
+};
+
+// This method will first be called with a null change and valid context, before any changes are posted.
+// The context has an unsubscribe() method that will release resources and disconnect.
+function changeCallback (change, context) {
+    if (!change) {
+        // Store the context, and call context.unsubscribe() to release the socket when done listening.
+    }
+    else {
+        // change is the changed row
+        // heartbeats are filtered out
+    }
+};
+
+// These are the defaults
+const parameters = {  
+    feed: 'continuous',
+    heartbeat: true,
+    since: 'now'
+};
+
+couch.changes(dbName, mangoQuery, parameters, callback, 'selector', selectorFilter).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document is missing
+    // ...or err.code=EUNKNOWN if statusCode is unexpected
+});
+```
+
 ## Insert a document
 ```javascript
 couch.insert("databaseName", {
