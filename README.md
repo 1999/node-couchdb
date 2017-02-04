@@ -102,6 +102,28 @@ couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
 });
 ```
 
+## Query using Mango (CouchDB 2.x)
+```javascript
+const dbName = "database";
+const mangoQuery = {
+    selector: {
+        $gte: {firstname: 'Ann'},
+        $lt: {firstname: 'George'}  
+    }
+};
+const parameters = {};
+
+couch.mango(dbName, mangoQuery, parameters).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document is missing
+    // ...or err.code=EUNKNOWN if statusCode is unexpected
+});
+```
+
 ## Insert a document
 ```javascript
 couch.insert("databaseName", {
