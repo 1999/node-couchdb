@@ -124,6 +124,24 @@ couch.mango(dbName, mangoQuery, parameters).then(({data, headers, status}) => {
 });
 ```
 
+## Trigger A Design Update
+```javascript
+const update = {
+     firstname: 'Rita',
+     middlename: '__delete__'
+};
+
+couch.design_update('database', 'someDocId', 'default', 'partialUpdate', update).then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EDOCMISSING if document is missing
+    // ...or err.code=EUNKNOWN if statusCode is unexpected
+});
+```
+
 ## Insert a document
 ```javascript
 couch.insert("databaseName", {
