@@ -230,6 +230,55 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    // insertAttachment() operations
+    it('should insert attachments', () => {
+        let docId;
+        let docRevision;
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, {}))
+            .then(({data}) => {
+                docId = data.id;
+                docRevision = data.rev;
+            })
+            .then(() => couch.insertAttachment(dbName, docId, 'test.txt', {}, docRevision))
+            .then((resData) => {
+                assert.isObject(resData, 'result is not an object');
+                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.isObject(resData.data, 'result data is not an object');
+
+                assert.isString(resData.data.id, 'ID is not a string');
+                assert.match(resData.data.id, /^[a-z0-9]+$/, 'ID is not valid');
+                assert.isNumber(resData.status, 'status is not a number');
+            });
+    });
+
+    it('should insert documents', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, {}))
+            .then(resData => {
+                assert.isObject(resData, 'result is not an object');
+                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.isObject(resData.data, 'result data is not an object');
+
+                assert.isString(resData.data.id, 'ID is not a string');
+                assert.match(resData.data.id, /^[a-z0-9]+$/, 'ID is not valid');
+                assert.isNumber(resData.status, 'status is not a number');
+            });
+    });
+
+    it('should reject insert promise with EDOCCONFLICT code if statusCode is unexpected', () => {
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, {_id: 'smth'}))
+            .then(() => couch.insert(dbName, {_id: 'smth'}))
+            .then(() => {
+                throw new Error('Insert operation was resolved but reject was expected');
+            }, err => {
+                assert.instanceOf(err, Error, 'err is not an Error instance');
+                assert.strictEqual(err.code, 'EDOCCONFLICT');
+            });
+    });
+
     // update() operations
     it('should return promise for update operation', () => {
         const promise = couch.update(dbName, {})
@@ -449,6 +498,36 @@ describe('node-couchdb tests', () => {
             }))
             .then(({data}) => {
                 assert.lengthOf(data.rows, 1, 'response contains wrong number of documents');
+            });
+    });
+
+    function createDesignDocument(dbName) {
+        return new Promise((resolve, reject) => {
+            request.put({
+                url: `http://127.0.0.1:5984/${dbName}/_design/test`,
+                body: JSON.stringify({
+                    _id: "_design/test",
+                    updates: {
+                        test_function: "function(doc, req) {return [doc, 'success']}"
+                    },
+                    language: "javascript"
+                })
+            }, (err, res, body) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
+    }
+
+    it('should use update functions', () => {
+        return couch.createDatabase(dbName)
+            .then(() => createDesignDocument(dbName))
+            .then(() => couch.updateFunction(dbName, 'test', 'test_function'))
+            .then((resData) => {
+                assert.strictEqual(resData.data, 'success');
             });
     });
 
