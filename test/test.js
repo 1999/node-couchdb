@@ -49,7 +49,7 @@ describe('node-couchdb tests', () => {
             'useCache',
             'listDatabases', 'createDatabase', 'dropDatabase',
             'insert', 'update', 'del', 'get', 'mango',
-            'uniqid'
+            'uniqid', 'updateFunction', 'delAttachment', 'insertAttachment'
         ]) {
             assert.typeOf(couch[method], 'function', `instance[${method}] is not a function`);
         }
