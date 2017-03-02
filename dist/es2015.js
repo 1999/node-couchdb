@@ -525,7 +525,7 @@ class NodeCouchDB {
                 throw new RequestError('EDOCMISSING', 'Design document is not found', body);
             }
 
-            if (res.statusCode !== 200) {
+            if (res.statusCode !== 200 && res.statusCode !== 201 && res.statusCode !== 202) {
                 throw new RequestError('EUNKNOWN', `Unexpected status code while calling update function: ${ res.statusCode }`, body);
             }
 
