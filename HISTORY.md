@@ -1,3 +1,7 @@
+# 1.2.0
+
+ * **new**: New `mango` API support ([@Flamenco](https://github.com/1999/node-couchdb/pull/20))
+
 # 1.1.1
  * **fix**: CouchDB 400 status codes now produce `EBADREQUEST` error code ([@pvomhoff](https://github.com/pvomhoff))
  * **fix**: `UnhandledPromiseRejectionWarning` inside tests is fixed ([@pvomhoff](https://github.com/pvomhoff))
