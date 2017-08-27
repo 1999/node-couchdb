@@ -1,6 +1,4 @@
-# node-couchdb [![Build Status](https://secure.travis-ci.org/1999/node-couchdb.svg?branch=master)](http://travis-ci.org/1999/node-couchdb) [![Dependency Status](https://david-dm.org/1999/node-couchdb.svg)](https://david-dm.org/1999/node-couchdb) [![devDependency Status](https://david-dm.org/1999/node-couchdb/dev-status.svg)](https://david-dm.org/1999/node-couchdb#info=devDependencies)
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/1999/node-couchdb.svg)](https://greenkeeper.io/)
+# node-couchdb [![Build Status](https://secure.travis-ci.org/1999/node-couchdb.svg?branch=master)](http://travis-ci.org/1999/node-couchdb) [![Dependency Status](https://david-dm.org/1999/node-couchdb.svg)](https://david-dm.org/1999/node-couchdb) [![devDependency Status](https://david-dm.org/1999/node-couchdb/dev-status.svg)](https://david-dm.org/1999/node-couchdb#info=devDependencies) [![Greenkeeper badge](https://badges.greenkeeper.io/1999/node-couchdb.svg)](https://greenkeeper.io/)
 
 `node-couchdb` package provides an easy way to interact with CouchDB using preferred cache layer:
 
