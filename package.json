@@ -5,6 +5,7 @@
   "author": "Dmitry Sorin <info@staypositive.ru>",
   "description": "ES2015-compatible package to interact with CouchDB",
   "contributors": [
+    "Brad Gardner",
     "Eric Scouten",
     "Pascal Vomhoff",
     "Peter Olson"

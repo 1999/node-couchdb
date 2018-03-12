@@ -1,6 +1,7 @@
-# (upcoming release)
+# 1.3.0
 
  * **new**: Support for [update functions](http://docs.couchdb.org/en/2.0.0/couchapp/ddocs.html#update-functions) ([@Flamenco](https://github.com/Flamenco))
+ * **new**: Support for inserting and deleting attachments ([@bgardner87](https://github.com/bgardner87))
 
 # 1.2.0
 

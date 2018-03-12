@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -34,7 +34,7 @@ var RequestError = function (_Error) {
     function RequestError(code, message, body) {
         _classCallCheck(this, RequestError);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(RequestError).call(this, message));
+        var _this = _possibleConstructorReturn(this, (RequestError.__proto__ || Object.getPrototypeOf(RequestError)).call(this, message));
 
         _this.code = code;
         _this.body = body;
@@ -46,7 +46,7 @@ var RequestError = function (_Error) {
 
 var NodeCouchDB = function () {
     function NodeCouchDB() {
-        var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+        var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
         _classCallCheck(this, NodeCouchDB);
 
@@ -124,8 +124,8 @@ var NodeCouchDB = function () {
                 method: 'PUT',
                 url: this._baseUrl + '/' + dbName
             }).then(function (_ref2) {
-                var res = _ref2.res;
-                var body = _ref2.body;
+                var res = _ref2.res,
+                    body = _ref2.body;
 
                 // database already exists
                 if (res.statusCode === 412) {
@@ -162,8 +162,8 @@ var NodeCouchDB = function () {
                 method: 'DELETE',
                 url: this._baseUrl + '/' + dbName + '/'
             }).then(function (_ref3) {
-                var res = _ref3.res;
-                var body = _ref3.body;
+                var res = _ref3.res,
+                    body = _ref3.body;
 
                 // database not found
                 if (res.statusCode === 404) {
@@ -196,7 +196,7 @@ var NodeCouchDB = function () {
         value: function get(dbName, uri) {
             var _this2 = this;
 
-            var query = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+            var query = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
             for (var prop in query) {
                 if (KEYS_TO_ENCODE.indexOf(prop) !== -1) {
@@ -210,8 +210,8 @@ var NodeCouchDB = function () {
             };
 
             return this._requestWrapped(requestOpts).then(function (_ref4) {
-                var res = _ref4.res;
-                var body = _ref4.body;
+                var res = _ref4.res,
+                    body = _ref4.body;
 
                 if (res.statusCode === 404) {
                     throw new RequestError('EDOCMISSING', 'Document is not found', body);
@@ -242,7 +242,7 @@ var NodeCouchDB = function () {
          * Fetch attachment from CouchDB. Returns a promise which is
          * - resolved with {data, headers, status} object
          * - rejected with `request` original error
-         * 
+         *
          * @param {String} dbName database name
          * @param {String} docId document id
          * @param {String} attachmentName attachment name
@@ -264,8 +264,8 @@ var NodeCouchDB = function () {
             };
 
             return this._requestWrapped(requestOpts).then(function (_ref5) {
-                var res = _ref5.res;
-                var body = _ref5.body;
+                var res = _ref5.res,
+                    body = _ref5.body;
 
                 if (res.statusCode === 404) {
                     throw new RequestError('EDOCMISSING', 'Attachment is not found', body);
@@ -312,8 +312,8 @@ var NodeCouchDB = function () {
                 url: this._baseUrl + '/' + dbName,
                 body: data
             }).then(function (_ref6) {
-                var res = _ref6.res;
-                var body = _ref6.body;
+                var res = _ref6.res,
+                    body = _ref6.body;
 
                 _this4._checkDocumentManipulationStatus(res.statusCode, body);
 
@@ -333,7 +333,7 @@ var NodeCouchDB = function () {
          * Insert document into CouchDB. Returns a promise which is
          * - resolved with {data, headers, status} object
          * - rejected with `request` original error
-         * 
+         *
          * @param {String} dbName database name
          * @param {String} docId document id
          * @param {String} attachmentName attachment name
@@ -353,8 +353,8 @@ var NodeCouchDB = function () {
                 },
                 body: body
             }).then(function (_ref7) {
-                var res = _ref7.res;
-                var body = _ref7.body;
+                var res = _ref7.res,
+                    body = _ref7.body;
 
                 if (res.statusCode === 409) {
                     throw new RequestError('EDOCCONFLICT', 'Document insert conflict - Document’s revision wasn’t specified or it’s not the latest', body);
@@ -395,8 +395,8 @@ var NodeCouchDB = function () {
                 url: this._baseUrl + '/' + dbName + '/' + encodeURIComponent(data._id),
                 body: data
             }).then(function (_ref8) {
-                var res = _ref8.res;
-                var body = _ref8.body;
+                var res = _ref8.res,
+                    body = _ref8.body;
 
                 _this5._checkDocumentManipulationStatus(res.statusCode, body);
 
@@ -435,8 +435,8 @@ var NodeCouchDB = function () {
                     rev: docRevision
                 }
             }).then(function (_ref9) {
-                var res = _ref9.res;
-                var body = _ref9.body;
+                var res = _ref9.res,
+                    body = _ref9.body;
 
                 _this6._checkDocumentManipulationStatus(res.statusCode, body);
 
@@ -466,7 +466,9 @@ var NodeCouchDB = function () {
     }, {
         key: 'mango',
         value: function mango(dbName, mangoQuery) {
-            var query = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+            var _this7 = this;
+
+            var query = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
             for (var prop in query) {
                 if (KEYS_TO_ENCODE.indexOf(prop) !== -1) {
@@ -494,8 +496,10 @@ var NodeCouchDB = function () {
             };
 
             return this._requestWrapped(requestOpts).then(function (_ref10) {
-                var res = _ref10.res;
-                var body = _ref10.body;
+                var res = _ref10.res,
+                    body = _ref10.body;
+
+                _this7._checkServerVersion(res.headers.server, 2);
 
                 if (res.statusCode === 404) {
                     throw new RequestError('EDOCMISSING', 'Document is not found', body);
@@ -517,7 +521,7 @@ var NodeCouchDB = function () {
          * Delete a document in the database. Returns a promise which is
          * - resolved with {data, headers, status} object
          * - rejected with `request` original error
-         * 
+         *
          * @param {String} dbName database name
          * @param {String} docId document id
          * @param {String} attachmentName attachment name
@@ -535,8 +539,8 @@ var NodeCouchDB = function () {
                     rev: docRevision
                 }
             }).then(function (_ref11) {
-                var res = _ref11.res;
-                var body = _ref11.body;
+                var res = _ref11.res,
+                    body = _ref11.body;
 
                 if (res.statusCode === 404) {
                     throw new RequestError('EDOCMISSING', 'Attachment is not found', body);
@@ -558,14 +562,13 @@ var NodeCouchDB = function () {
          * Calls an update function in the database. Returns a promise which is
          * - resolved with {data, headers, status} object
          * - rejected with `request` original error
-         * 
+         *
          * @param  {String} dbName             database name
          * @param  {String} designDocument     design document name
          * @param  {String} updateFunctionName update function name
          * @param  {Object} queryString        query string parameters
          * @param  {String} docId              document id
-         
-         * @return {Promise}
+          * @return {Promise}
          */
 
     }, {
@@ -587,8 +590,8 @@ var NodeCouchDB = function () {
                 url: url,
                 qs: queryString
             }).then(function (_ref12) {
-                var res = _ref12.res;
-                var body = _ref12.body;
+                var res = _ref12.res,
+                    body = _ref12.body;
 
                 if (res.statusCode === 404) {
                     throw new RequestError('EDOCMISSING', 'Design document is not found', body);
@@ -618,7 +621,7 @@ var NodeCouchDB = function () {
     }, {
         key: 'uniqid',
         value: function uniqid() {
-            var count = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+            var count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
             return this._requestWrapped({
                 url: this._baseUrl + '/_uuids',
@@ -668,7 +671,7 @@ var NodeCouchDB = function () {
     }, {
         key: '_requestWrapped',
         value: function _requestWrapped(opts) {
-            var _this7 = this;
+            var _this8 = this;
 
             if (typeof opts === 'string') {
                 opts = { url: opts };
@@ -679,12 +682,9 @@ var NodeCouchDB = function () {
 
             return whenCacheChecked.then(function (cache) {
                 // cache plugin returns null if record doesn't exist
-
-                var _ref14 = cache || {};
-
-                var etag = _ref14.etag;
-                var cacheBody = _ref14.body;
-
+                var _ref14 = cache || {},
+                    etag = _ref14.etag,
+                    cacheBody = _ref14.body;
 
                 return new Promise(function (resolve, reject) {
                     if (etag) {
@@ -692,7 +692,7 @@ var NodeCouchDB = function () {
                         opts.headers['if-none-match'] = etag;
                     }
 
-                    _this7._requestWrappedDefaults(opts, function (err, res, body) {
+                    _this8._requestWrappedDefaults(opts, function (err, res, body) {
                         if (err) {
                             reject(err);
                         } else {
@@ -720,6 +720,27 @@ var NodeCouchDB = function () {
             var cacheKeyFull = requestOpts.url + '?' + stringifiedQuery;
 
             return _crypto2.default.createHash('md5').update(cacheKeyFull).digest('hex');
+        }
+
+        /**
+         * @param {String} serverHeader
+         * @param {Number} minServerVersion
+         */
+
+    }, {
+        key: '_checkServerVersion',
+        value: function _checkServerVersion(serverHeader) {
+            var minServerVersion = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+            var serverVersion = serverHeader.match(/^CouchDB\/([\d]+)/);
+
+            if (!serverVersion || !serverVersion[1]) {
+                throw new RequestError('ESERVERNOTSUPPORTED', 'Server is not supported: ' + serverHeader);
+            }
+
+            if (serverVersion[1] < minServerVersion) {
+                throw new RequestError('ESERVEROLD', 'Server version is too old for using this API: ' + minServerVersion + ' (expected), ' + serverHeader + ' (actual)');
+            }
         }
     }]);
 
