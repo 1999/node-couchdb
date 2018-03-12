@@ -1,3 +1,7 @@
+# (upcoming release)
+
+ * **new**: Support for [update functions](http://docs.couchdb.org/en/2.0.0/couchapp/ddocs.html#update-functions) ([@Flamenco](https://github.com/Flamenco))
+
 # 1.2.0
 
  * **new**: New `mango` API support ([@Flamenco](https://github.com/1999/node-couchdb/pull/20))
