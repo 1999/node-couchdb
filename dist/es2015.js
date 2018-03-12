@@ -1,7 +1,18 @@
 'use strict';
 
-import crypto from 'crypto';
-import request from 'request';
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _crypto = require('crypto');
+
+var _crypto2 = _interopRequireDefault(_crypto);
+
+var _request = require('request');
+
+var _request2 = _interopRequireDefault(_request);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // @see https://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options
 // @see https://github.com/1999/node-couchdb/issues/9
@@ -16,8 +27,10 @@ class RequestError extends Error {
     }
 }
 
-export default class NodeCouchDB {
-    constructor(opts = {}) {
+class NodeCouchDB {
+    constructor() {
+        let opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
         const instanceOpts = Object.assign({
             protocol: 'http',
             host: '127.0.0.1',
@@ -27,10 +40,10 @@ export default class NodeCouchDB {
             auth: null
         }, opts);
 
-        this._baseUrl = `${instanceOpts.protocol}://${instanceOpts.host}:${instanceOpts.port}`;
+        this._baseUrl = `${ instanceOpts.protocol }://${ instanceOpts.host }:${ instanceOpts.port }`;
         this._cache = instanceOpts.cache;
 
-        this._requestWrappedDefaults = request.defaults({
+        this._requestWrappedDefaults = _request2.default.defaults({
             auth: instanceOpts.auth,
             headers: {
                 'user-agent': 'node-couchdb/1'
@@ -63,7 +76,10 @@ export default class NodeCouchDB {
      * @return {Promise}
      */
     listDatabases() {
-        return this._requestWrapped(`${this._baseUrl}/_all_dbs`).then(({body}) => body);
+        return this._requestWrapped(`${ this._baseUrl }/_all_dbs`).then(_ref => {
+            let body = _ref.body;
+            return body;
+        });
     }
 
     /**
@@ -77,15 +93,18 @@ export default class NodeCouchDB {
     createDatabase(dbName) {
         return this._requestWrapped({
             method: 'PUT',
-            url: `${this._baseUrl}/${dbName}`
-        }).then(({res, body}) => {
+            url: `${ this._baseUrl }/${ dbName }`
+        }).then(_ref2 => {
+            let res = _ref2.res;
+            let body = _ref2.body;
+
             // database already exists
             if (res.statusCode === 412) {
-                throw new RequestError('EDBEXISTS', `Database already exists: ${dbName}`, body);
+                throw new RequestError('EDBEXISTS', `Database already exists: ${ dbName }`, body);
             }
 
             if (res.statusCode === 401) {
-                throw new RequestError('ENOTADMIN', `Should be authorized as admin to create database: ${res.statusCode}`, body);
+                throw new RequestError('ENOTADMIN', `Should be authorized as admin to create database: ${ res.statusCode }`, body);
             }
 
             if (res.statusCode === 400) {
@@ -93,7 +112,7 @@ export default class NodeCouchDB {
             }
 
             if (res.statusCode !== 201) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while creating database ${dbName}: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while creating database ${ dbName }: ${ res.statusCode }`, body);
             }
         });
     }
@@ -109,19 +128,22 @@ export default class NodeCouchDB {
     dropDatabase(dbName) {
         return this._requestWrapped({
             method: 'DELETE',
-            url: `${this._baseUrl}/${dbName}/`
-        }).then(({res, body}) => {
+            url: `${ this._baseUrl }/${ dbName }/`
+        }).then(_ref3 => {
+            let res = _ref3.res;
+            let body = _ref3.body;
+
             // database not found
             if (res.statusCode === 404) {
-                throw new RequestError('EDBMISSING', `Database not found: ${dbName}`, body);
+                throw new RequestError('EDBMISSING', `Database not found: ${ dbName }`, body);
             }
 
             if (res.statusCode === 401) {
-                throw new RequestError('ENOTADMIN', `Should be authorized as admin to delete database: ${res.statusCode}`, body);
+                throw new RequestError('ENOTADMIN', `Should be authorized as admin to delete database: ${ res.statusCode }`, body);
             }
 
             if (res.statusCode !== 200) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while deleting database ${dbName}: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while deleting database ${ dbName }: ${ res.statusCode }`, body);
             }
         });
     }
@@ -136,25 +158,30 @@ export default class NodeCouchDB {
      * @param {Object} [query] query options as key: value
      * @return {Promise}
      */
-    get(dbName, uri, query = {}) {
+    get(dbName, uri) {
+        let query = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
         for (let prop in query) {
-            if (KEYS_TO_ENCODE.includes(prop)) {
+            if (KEYS_TO_ENCODE.indexOf(prop) !== -1) {
                 query[prop] = JSON.stringify(query[prop]);
             }
         }
 
         const requestOpts = {
-            url: `${this._baseUrl}/${dbName}/${uri}`,
+            url: `${ this._baseUrl }/${ dbName }/${ uri }`,
             qs: query
         };
 
-        return this._requestWrapped(requestOpts).then(({res, body}) => {
+        return this._requestWrapped(requestOpts).then(_ref4 => {
+            let res = _ref4.res;
+            let body = _ref4.body;
+
             if (res.statusCode === 404) {
                 throw new RequestError('EDOCMISSING', 'Document is not found', body);
             }
 
             if (res.statusCode !== 200 && res.statusCode !== 304) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while fetching documents from the database: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while fetching documents from the database: ${ res.statusCode }`, body);
             }
 
             if (res.statusCode === 200 && this._cache) {
@@ -188,19 +215,22 @@ export default class NodeCouchDB {
     getAttachment(dbName, docId, attachmentName, docRevision) {
         var requestOpts = {
             method: 'GET',
-            url: `${this._baseUrl}/${dbName}/${docId}/${attachmentName}`,
+            url: `${ this._baseUrl }/${ dbName }/${ docId }/${ attachmentName }`,
             qs: {
                 rev: docRevision
             }
         };
 
-        return this._requestWrapped(requestOpts).then(({res, body}) => {
+        return this._requestWrapped(requestOpts).then(_ref5 => {
+            let res = _ref5.res;
+            let body = _ref5.body;
+
             if (res.statusCode === 404) {
                 throw new RequestError('EDOCMISSING', 'Attachment is not found', body);
             }
 
             if (res.statusCode !== 200 && res.statusCode !== 304) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while fetching attachment from the database: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while fetching attachment from the database: ${ res.statusCode }`, body);
             }
 
             if (res.statusCode === 200 && this._cache) {
@@ -232,13 +262,16 @@ export default class NodeCouchDB {
     insert(dbName, data) {
         return this._requestWrapped({
             method: 'POST',
-            url: `${this._baseUrl}/${dbName}`,
+            url: `${ this._baseUrl }/${ dbName }`,
             body: data
-        }).then(({res, body}) => {
-            this._checkDocumentManipulationStatus(res.statusCode, body)
+        }).then(_ref6 => {
+            let res = _ref6.res;
+            let body = _ref6.body;
+
+            this._checkDocumentManipulationStatus(res.statusCode, body);
 
             if (res.statusCode !== 201 && res.statusCode !== 202) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while inserting document into the database: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while inserting document into the database: ${ res.statusCode }`, body);
             }
 
             return {
@@ -264,12 +297,15 @@ export default class NodeCouchDB {
     insertAttachment(dbName, docId, attachmentName, body, docRevision) {
         return this._requestWrapped({
             method: 'PUT',
-            url: `${this._baseUrl}/${dbName}/${encodeURIComponent(docId)}/attachment`,
+            url: `${ this._baseUrl }/${ dbName }/${ encodeURIComponent(docId) }/attachment`,
             qs: {
                 rev: docRevision
             },
             body: body
-        }).then(({res, body}) => {
+        }).then(_ref7 => {
+            let res = _ref7.res;
+            let body = _ref7.body;
+
             if (res.statusCode === 409) {
                 throw new RequestError('EDOCCONFLICT', 'Document insert conflict - Document’s revision wasn’t specified or it’s not the latest', body);
             }
@@ -301,54 +337,16 @@ export default class NodeCouchDB {
 
         return this._requestWrapped({
             method: 'PUT',
-            url: `${this._baseUrl}/${dbName}/${encodeURIComponent(data._id)}`,
+            url: `${ this._baseUrl }/${ dbName }/${ encodeURIComponent(data._id) }`,
             body: data
-        }).then(({res, body}) => {
-            this._checkDocumentManipulationStatus(res.statusCode, body)
+        }).then(_ref8 => {
+            let res = _ref8.res;
+            let body = _ref8.body;
 
+            this._checkDocumentManipulationStatus(res.statusCode, body);
 
             if (res.statusCode !== 201 && res.statusCode !== 202) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while inserting document into the database: ${res.statusCode}`, body);
-            }
-
-            return {
-                data: body,
-                headers: res.headers,
-                status: res.statusCode
-            };
-        });
-    }
-
-    /**
-     * Trigger a design update script in CouchDB. Returns a promise which is
-     * - resolved with {data, headers, status} object
-     * - rejected with `request` original error
-
-     * @param dbName database name
-     * @param id documentId
-     * @param designId design document id
-     * @param updateId update script id
-     * @param data update payload
-     * @returns {*}
-     */
-    design_update(dbName, docId, designId, updateId, data) {
-        if (!docId || !data) {
-            const err = new Error('id and data fields should exist when updating the document');
-            err.code = 'EFIELDMISSING';
-
-            return Promise.reject(err);
-        }
-
-        return this._requestWrapped({
-            method: 'PUT',
-            url: `${this._baseUrl}/${dbName}/_design/${designId}/_update/${updateId}/${encodeURIComponent(docId)}`,
-            body: data
-        }).then(({res, body}) => {
-            this._checkDocumentManipulationStatus(res.statusCode, body)
-
-
-            if (res.statusCode !== 201 && res.statusCode !== 202) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while inserting document into the database: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while inserting document into the database: ${ res.statusCode }`, body);
             }
 
             return {
@@ -372,15 +370,18 @@ export default class NodeCouchDB {
     del(dbName, docId, docRevision) {
         return this._requestWrapped({
             method: 'DELETE',
-            url: `${this._baseUrl}/${dbName}/${encodeURIComponent(docId)}`,
+            url: `${ this._baseUrl }/${ dbName }/${ encodeURIComponent(docId) }`,
             qs: {
                 rev: docRevision
             }
-        }).then(({res, body}) => {
-            this._checkDocumentManipulationStatus(res.statusCode, body)
+        }).then(_ref9 => {
+            let res = _ref9.res;
+            let body = _ref9.body;
+
+            this._checkDocumentManipulationStatus(res.statusCode, body);
 
             if (res.statusCode !== 200) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while deleting document: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while deleting document: ${ res.statusCode }`, body);
             }
 
             return {
@@ -401,13 +402,15 @@ export default class NodeCouchDB {
      * @param {Object} [query] query options as key: value
      * @return {Promise}
      */
-    mango(dbName, mangoQuery, query = {}) {
+    mango(dbName, mangoQuery) {
+        let query = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
         for (let prop in query) {
-            if (KEYS_TO_ENCODE.includes(prop)) {
+            if (KEYS_TO_ENCODE.indexOf(prop) !== -1) {
                 query[prop] = JSON.stringify(query[prop]);
             }
         }
-        
+
         if (typeof mangoQuery === 'string') {
             try {
                 mangoQuery = JSON.parse(mangoQuery);
@@ -415,27 +418,28 @@ export default class NodeCouchDB {
                 return Promise.reject(new RequestError('EBADREQUEST', 'The Mango query parameter is not parsable.'));
             }
         }
-        
+
         if (typeof mangoQuery !== 'object') {
             return Promise.reject(new RequestError('EBADREQUEST', 'Invalid Mango query parameter.'));
         }
 
         const requestOpts = {
             method: 'POST',
-            url: `${this._baseUrl}/${dbName}/_find`,
+            url: `${ this._baseUrl }/${ dbName }/_find`,
             body: mangoQuery,
             qs: query
         };
 
-        return this._requestWrapped(requestOpts).then(({res, body}) => {
-            this._checkServerVersion(res.headers.server, 2);
+        return this._requestWrapped(requestOpts).then(_ref10 => {
+            let res = _ref10.res;
+            let body = _ref10.body;
 
             if (res.statusCode === 404) {
                 throw new RequestError('EDOCMISSING', 'Document is not found', body);
             }
 
             if (res.statusCode !== 200 && res.statusCode !== 304) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while fetching documents from the database: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while fetching documents from the database: ${ res.statusCode }`, body);
             }
 
             return {
@@ -460,17 +464,20 @@ export default class NodeCouchDB {
     delAttachment(dbName, docId, attachmentName, docRevision) {
         return this._requestWrapped({
             method: 'DELETE',
-            url: `${this._baseUrl}/${dbName}/${encodeURIComponent(docId)}/${encodeURIComponent(attachmentName)}`,
+            url: `${ this._baseUrl }/${ dbName }/${ encodeURIComponent(docId) }/${ encodeURIComponent(attachmentName) }`,
             qs: {
                 rev: docRevision
             }
-        }).then(({res, body}) => {
+        }).then(_ref11 => {
+            let res = _ref11.res;
+            let body = _ref11.body;
+
             if (res.statusCode === 404) {
                 throw new RequestError('EDOCMISSING', 'Attachment is not found', body);
             }
 
             if (res.statusCode !== 200) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while deleting attachment: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while deleting attachment: ${ res.statusCode }`, body);
             }
 
             return {
@@ -494,29 +501,32 @@ export default class NodeCouchDB {
      
      * @return {Promise}
      */
-    updateFunction(dbName, designDocument, updateFunctionName, queryString, docId ) {
+    updateFunction(dbName, designDocument, updateFunctionName, queryString, docId) {
         const method = docId ? 'PUT' : 'POST';
         queryString = queryString || {};
 
         let url;
 
         if (method === 'PUT') {
-            url = `${this._baseUrl}/${dbName}/_design/${designDocument}/_update/${updateFunctionName}/${encodeURIComponent(docId)}`;
+            url = `${ this._baseUrl }/${ dbName }/_design/${ designDocument }/_update/${ updateFunctionName }/${ encodeURIComponent(docId) }`;
         } else {
-            url = `${this._baseUrl}/${dbName}/_design/${designDocument}/_update/${updateFunctionName}`;
+            url = `${ this._baseUrl }/${ dbName }/_design/${ designDocument }/_update/${ updateFunctionName }`;
         }
 
         return this._requestWrapped({
             method: method,
             url: url,
             qs: queryString
-        }).then(({res, body}) => {
+        }).then(_ref12 => {
+            let res = _ref12.res;
+            let body = _ref12.body;
+
             if (res.statusCode === 404) {
                 throw new RequestError('EDOCMISSING', 'Design document is not found', body);
             }
 
             if (res.statusCode !== 200 && res.statusCode !== 201 && res.statusCode !== 202) {
-                throw new RequestError('EUNKNOWN', `Unexpected status code while calling update function: ${res.statusCode}`, body);
+                throw new RequestError('EUNKNOWN', `Unexpected status code while calling update function: ${ res.statusCode }`, body);
             }
 
             return {
@@ -535,11 +545,15 @@ export default class NodeCouchDB {
      * @param {Number} [count = 1] number of IDs you want to get
      * @return {Promise}
      */
-    uniqid(count = 1) {
+    uniqid() {
+        let count = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+
         return this._requestWrapped({
-            url: `${this._baseUrl}/_uuids`,
-            qs: {count}
-        }).then(({body}) => {
+            url: `${ this._baseUrl }/_uuids`,
+            qs: { count }
+        }).then(_ref13 => {
+            let body = _ref13.body;
+
             return body.uuids;
         });
     }
@@ -552,21 +566,21 @@ export default class NodeCouchDB {
      * @throws {RequestError}
      */
     _checkDocumentManipulationStatus(statusCode, body) {
-      if (statusCode === 400) {
-          throw new RequestError('EBADREQUEST', 'Invalid request body or parameters', body);
-      }
+        if (statusCode === 400) {
+            throw new RequestError('EBADREQUEST', 'Invalid request body or parameters', body);
+        }
 
-      if (statusCode === 401) {
-          throw new RequestError('EUNAUTHORIZED', 'Write privileges required', body);
-      }
+        if (statusCode === 401) {
+            throw new RequestError('EUNAUTHORIZED', 'Write privileges required', body);
+        }
 
-      if (statusCode === 404) {
-          throw new RequestError('EDOCMISSING', 'Document not found', body);
-      }
+        if (statusCode === 404) {
+            throw new RequestError('EDOCMISSING', 'Document not found', body);
+        }
 
-      if (statusCode === 409) {
-          throw new RequestError('EDOCCONFLICT', 'Document insert conflict', body);
-      }
+        if (statusCode === 409) {
+            throw new RequestError('EDOCCONFLICT', 'Document insert conflict', body);
+        }
     }
 
     /**
@@ -577,20 +591,20 @@ export default class NodeCouchDB {
      */
     _requestWrapped(opts) {
         if (typeof opts === 'string') {
-            opts = {url: opts};
+            opts = { url: opts };
         }
 
         const cacheKey = this._getCacheKey(opts);
-        const whenCacheChecked = (!this._cache || (opts.method && opts.method !== 'GET'))
-            ? Promise.resolve({})
-            : this._cache.get(cacheKey);
+        const whenCacheChecked = !this._cache || opts.method && opts.method !== 'GET' ? Promise.resolve({}) : this._cache.get(cacheKey);
 
         return whenCacheChecked.then(cache => {
             // cache plugin returns null if record doesn't exist
-            const {
-                etag,
-                body: cacheBody
-            } = cache || {};
+
+            var _ref14 = cache || {};
+
+            const etag = _ref14.etag;
+            const cacheBody = _ref14.body;
+
 
             return new Promise((resolve, reject) => {
                 if (etag) {
@@ -612,7 +626,6 @@ export default class NodeCouchDB {
         });
     }
 
-
     /**
      * Gets cache key built from request options
      *
@@ -621,24 +634,10 @@ export default class NodeCouchDB {
      */
     _getCacheKey(requestOpts) {
         const stringifiedQuery = JSON.stringify(requestOpts.query || {});
-        const cacheKeyFull = `${requestOpts.url}?${stringifiedQuery}`;
+        const cacheKeyFull = `${ requestOpts.url }?${ stringifiedQuery }`;
 
-        return crypto.createHash('md5').update(cacheKeyFull).digest('hex');
+        return _crypto2.default.createHash('md5').update(cacheKeyFull).digest('hex');
     }
-
-    /**
-     * @param {String} serverHeader 
-     * @param {Number} minServerVersion
-     */
-    _checkServerVersion(serverHeader, minServerVersion = 1) {
-        const serverVersion = serverHeader.match(/^CouchDB\/([\d]+)/);
-
-        if (!serverVersion || !serverVersion[1]) {
-            throw new RequestError('ESERVERNOTSUPPORTED', `Server is not supported: ${serverHeader}`);
-        }
-
-        if (serverVersion[1] < minServerVersion) {
-            throw new RequestError('ESERVEROLD', `Server version is too old for using this API: ${minServerVersion} (expected), ${serverHeader} (actual)`);
-        }
-    }
-};
+}exports.default = NodeCouchDB;
+;
+module.exports = exports['default'];

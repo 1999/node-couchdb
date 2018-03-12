@@ -175,6 +175,43 @@ couch.update("databaseName", {
 });
 ```
 
+## Insert an attachment
+```javascript
+couch.insertAttachment("databaseName", "document id", "attachment name", "attachment body", "doc revision").then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EFIELDMISSING if either _id or _rev fields are missing
+});
+```
+
+## Delete an attachment
+```javascript
+// note that "doc" must have both "_id" and "_rev" fields
+couch.update("databaseName", "document id", "attachment name", "doc revision").then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EFIELDMISSING if either _id or _rev fields are missing
+});
+```
+
+## Use an update function
+```javascript
+couch.updateFunction("databaseName", "designDocument", "updateFunction", {optional query string}, "docid").then(({data, headers, status}) => {
+    // data is json response
+    // headers is an object with all response headers
+    // status is statusCode number
+}, err => {
+    // either request error occured
+    // ...or err.code=EFIELDMISSING if either _id or _rev fields are missing
+});
+```
+
 ## Delete a document
 ```javascript
 couch.del("databaseName", "some_document_id", "document_revision").then(({data, headers, status}) => {
