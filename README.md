@@ -87,8 +87,8 @@ const endKey = ["George"];
 const viewUrl = "_design/list/_view/by_firstname";
 
 const queryOptions = {
-    startKey,
-    endKey
+    startkey: startKey,
+    endkey: endKey
 };
 
 couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
