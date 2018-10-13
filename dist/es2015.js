@@ -345,7 +345,7 @@ class NodeCouchDB {
 
             this._checkDocumentManipulationStatus(res.statusCode, body);
 
-            if (res.statusCode !== 201 && res.statusCode !== 202) {
+            if (res.statusCode >= 200 && res.statusCode <= 202) {
                 throw new RequestError('EUNKNOWN', `Unexpected status code while inserting document into the database: ${res.statusCode}`, body);
             }
 
@@ -658,4 +658,4 @@ class NodeCouchDB {
     }
 }exports.default = NodeCouchDB;
 ;
-module.exports = exports['default'];
+module.exports = exports.default;
