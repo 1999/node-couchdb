@@ -168,7 +168,7 @@ class NodeCouchDB {
         }
 
         const requestOpts = {
-            url: `${this._baseUrl}/${dbName}/${uri}`,
+            url: `${this._baseUrl}/${dbName}/${encodeURIComponent(uri)}`,
             qs: query
         };
 
@@ -500,7 +500,7 @@ class NodeCouchDB {
      * @param  {String} updateFunctionName update function name
      * @param  {Object} queryString        query string parameters
      * @param  {String} docId              document id
-      * @return {Promise}
+       * @return {Promise}
      */
     updateFunction(dbName, designDocument, updateFunctionName, queryString, docId) {
         const method = docId ? 'PUT' : 'POST';

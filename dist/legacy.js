@@ -205,7 +205,7 @@ var NodeCouchDB = function () {
             }
 
             var requestOpts = {
-                url: this._baseUrl + '/' + dbName + '/' + uri,
+                url: this._baseUrl + '/' + dbName + '/' + encodeURIComponent(uri),
                 qs: query
             };
 
@@ -568,7 +568,7 @@ var NodeCouchDB = function () {
          * @param  {String} updateFunctionName update function name
          * @param  {Object} queryString        query string parameters
          * @param  {String} docId              document id
-          * @return {Promise}
+           * @return {Promise}
          */
 
     }, {
