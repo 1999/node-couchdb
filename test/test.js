@@ -1,7 +1,7 @@
 'use strict';
 
 import {assert} from 'chai';
-import request from 'request';
+import fetch from 'node-fetch';
 import memoryCache from 'node-couchdb-plugin-memory';
 import nodeCouchDb from '../lib/node-couchdb';
 
@@ -22,21 +22,15 @@ describe('node-couchdb tests', () => {
 
     afterEach(done => {
         const onFinish = () => done();
+        const url = `http://${AUTH_USER}:${AUTH_PASS}@127.0.0.1:5984/_config/admins/${AUTH_USER}`;
 
         Promise.all([
             // drop database if it was used
             couch.dropDatabase(dbName).catch(noop),
 
             // delete admin user if it was created
-            new Promise(resolve => {
-                request({
-                    url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
-                    method: 'DELETE',
-                    auth: {
-                        user: AUTH_USER,
-                        pass: AUTH_PASS
-                    }
-                }, resolve);
+            fetch(url, {
+                method: 'DELETE',
             })
         ]).then(onFinish).catch(onFinish);
     });
@@ -501,10 +495,11 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    function createDesignDocument(dbName) {
-        return new Promise((resolve, reject) => {
-            request.put({
-                url: `http://127.0.0.1:5984/${dbName}/_design/test`,
+    async function createDesignDocument(dbName) {
+        try {
+            const url = `http://127.0.0.1:5984/${dbName}/_design/test`;
+            const res = await fetch(url, {
+                method: 'PUT',
                 body: JSON.stringify({
                     _id: "_design/test",
                     updates: {
@@ -512,14 +507,11 @@ describe('node-couchdb tests', () => {
                     },
                     language: "javascript"
                 })
-            }, (err, res, body) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+            }); 
+            return res;
+        } catch (err) {
+            throw (new Error(err))
+        }
     }
 
     it('should use update functions', () => {
@@ -531,37 +523,32 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    function createAdmin() {
-        return new Promise((resolve, reject) => {
-            request.put({
-                url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
+    async function createAdmin() {
+        try {
+            const url = `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`;
+            const res = await fetch(url, {
+                method: 'PUT',
                 body: JSON.stringify(AUTH_PASS)
-            }, (err, res, body) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
+            }); 
+            return res;
+        } catch (err) {
+            throw (new Error(err))
+        }
     }
 
-    function addDbSecurity(dbName) {
-        return new Promise(function(resolve, reject) {
-            const opts = {
+    async function addDbSecurity(dbName) {
+        try {
+            const url = `http://127.0.0.1:5984/${dbName}/_security`;
+            await fetch(url, {
                 method: 'PUT',
-                url: `http://127.0.0.1:5984/${dbName}/_security`,
+                headers: {
+                    'content-type': 'applicaton/json'
+                },
                 body: {"admins": { "names": ['somename'],"roles": []}, "members": {"names": ['somename'],"roles": []}},
-                json: true
-            };
-
-            request(opts, function(err, response, body) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            })
-        })
+            }); 
+        } catch (err) {
+            throw (new Error(err))
+        }
     }
 
     // auth

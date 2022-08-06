@@ -11,6 +11,7 @@
     "Peter Olson"
   ],
   "main": "./dist/es2015.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git://github.com/1999/node-couchdb.git"
@@ -22,14 +23,15 @@
     "prepublish": "npm run release:legacy && npm run release:es2015",
     "release:legacy": "./node_modules/.bin/babel lib/node-couchdb.js --out-file dist/legacy.js --no-babelrc --presets es2015 --plugins array-includes",
     "release:es2015": "./node_modules/.bin/babel lib/node-couchdb.js --out-file dist/es2015.js",
-    "test": "./node_modules/.bin/mocha --compilers js:babel-register --timeout 10000 --slow 10000 test/"
+    "test": "./node_modules/.bin/mocha --require babel-register --timeout 10000 --slow 10000 test/"
   },
   "keywords": [
     "couchdb",
     "nosql"
   ],
   "dependencies": {
-    "node-fetch": "^3.2.10"
+    "abort-controller": "^3.0.0",
+    "node-fetch": "^2"
   },
   "devDependencies": {
     "babel-cli": "^6.7.5",
