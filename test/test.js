@@ -1,15 +1,15 @@
 'use strict';
 
 import {assert} from 'chai';
-import fetch from 'node-fetch';
+import fetch, { Headers } from 'node-fetch';
 import memoryCache from 'node-couchdb-plugin-memory';
 import nodeCouchDb from '../lib/node-couchdb';
 
 const noop = function () {}
 const cache = new memoryCache;
 
-const AUTH_USER = 'some_login';
-const AUTH_PASS = 'secret_pass';
+const AUTH_USER = 'admin';
+const AUTH_PASS = ';ySY,C6<t(N36Sk9~^sb';
 
 describe('node-couchdb tests', () => {
     let dbName;
@@ -17,7 +17,12 @@ describe('node-couchdb tests', () => {
 
     beforeEach(() => {
         dbName = `sample${Date.now()}`;
-        couch = new nodeCouchDb;
+        couch = new nodeCouchDb({
+            auth: {
+                user: AUTH_USER,
+                pass: AUTH_PASS
+            }
+        });
     });
 
     afterEach(done => {
@@ -192,7 +197,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(resData => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -238,7 +243,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insertAttachment(dbName, docId, 'test.txt', {}, docRevision))
             .then((resData) => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -252,7 +257,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(resData => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -303,7 +308,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(({data}) => couch.update(dbName, {_id: data.id, _rev: data.rev, new_field: 'some_string'}))
             .then(({data, headers, status}) => {
-                assert.isObject(headers, 'result headers is not an object');
+                assert.instanceOf(headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(data, 'result data is not an object');
 
                 assert.strictEqual(status, 201);
@@ -417,13 +422,13 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, doc))
             .then(({data, headers, status}) => {
                 assert.isObject(data);
-                assert.isObject(headers);
+                assert.instanceOf(headers, Headers);
                 assert.strictEqual(status, 201);
             })
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 200);
-                assert.isObject(headers);
+                assert.instanceOf(headers, Headers);
                 assert.isObject(data);
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
@@ -450,7 +455,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 304);
-                assert.isObject(headers, 'headers data is not an object');
+                assert.instanceOf(headers, Headers, 'headers data is not an instance of Headers');
                 assert.isObject(data, 'data is empty');
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
