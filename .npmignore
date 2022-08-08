@@ -1,5 +1,6 @@
 .babelrc
 .git*
+.env
 test/
 .travis.yml
 .DS_Store

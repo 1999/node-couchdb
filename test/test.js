@@ -3,13 +3,14 @@
 import {assert} from 'chai';
 import fetch, { Headers } from 'node-fetch';
 import memoryCache from 'node-couchdb-plugin-memory';
-import nodeCouchDb from '../lib/node-couchdb';
+import nodeCouchDb from '../lib/node-couchdb.js';
+import 'dotenv/config';
 
-const noop = function () {}
+const noop = function () {};
 const cache = new memoryCache;
 
-const AUTH_USER = 'admin';
-const AUTH_PASS = ';ySY,C6<t(N36Sk9~^sb';
+const AUTH_USER = process.env.COUCHDB_USER;
+const AUTH_PASS = process.env.COUCHDB_PASS;
 
 describe('node-couchdb tests', () => {
     let dbName;
@@ -27,7 +28,7 @@ describe('node-couchdb tests', () => {
 
     afterEach(done => {
         const onFinish = () => done();
-        const url = `http://${AUTH_USER}:${AUTH_PASS}@127.0.0.1:5984/_config/admins/${AUTH_USER}`;
+        const url = `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`;
 
         Promise.all([
             // drop database if it was used
@@ -94,6 +95,7 @@ describe('node-couchdb tests', () => {
         const promise = couch.createDatabase(dbName)
             .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'createDatabase() result is not a promise');
+        return promise;
     });
 
     it('should create new database', () => {
@@ -503,8 +505,17 @@ describe('node-couchdb tests', () => {
     async function createDesignDocument(dbName) {
         try {
             const url = `http://127.0.0.1:5984/${dbName}/_design/test`;
+            const str = `${AUTH_USER}:${AUTH_PASS}`;
+            const b64 = Buffer.from(str, 'utf8').toString('base64');
+
             const res = await fetch(url, {
                 method: 'PUT',
+                headers: {
+                    'user-agent': 'node-couchdb/1',
+                    'content-type': 'application/json',
+                    'authorization': 'Basic ' + b64
+                },
+
                 body: JSON.stringify({
                     _id: "_design/test",
                     updates: {
@@ -528,62 +539,25 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    async function createAdmin() {
-        try {
-            const url = `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`;
-            const res = await fetch(url, {
-                method: 'PUT',
-                body: JSON.stringify(AUTH_PASS)
-            }); 
-            return res;
-        } catch (err) {
-            throw (new Error(err))
-        }
-    }
-
-    async function addDbSecurity(dbName) {
-        try {
-            const url = `http://127.0.0.1:5984/${dbName}/_security`;
-            await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'content-type': 'applicaton/json'
-                },
-                body: {"admins": { "names": ['somename'],"roles": []}, "members": {"names": ['somename'],"roles": []}},
-            }); 
-        } catch (err) {
-            throw (new Error(err))
-        }
-    }
-
-    // auth
-    // @see http://guide.couchdb.org/draft/security.html#authentication
-    // @see https://github.com/1999/node-couchdb/issues/4
     it('should use basic auth for admin features', () => {        
-        return createAdmin()
-            .then(() => couch.createDatabase(dbName))
+        const couchNonAuth = new nodeCouchDb;
+
+        return couchNonAuth.createDatabase(dbName)
             .then(() => {
                 throw new Error('admin party is off but createDatabase() op promise has been resolved');
             }, err => {
                 assert.instanceOf(err, Error, 'err is not an instance of Error');
                 assert.strictEqual(err.code, 'ENOTADMIN', 'err code is not ENOTADMIN');
 
-                const couchAuth = new nodeCouchDb({
-                    auth: {
-                        user: AUTH_USER,
-                        pass: AUTH_PASS
-                    }
-                });
-
-                return couchAuth.createDatabase(dbName);
+                return couch.createDatabase(dbName);
             });
     });
 
     it('should reject insert promise with EUNAUTHORIZED if user is not logged in', () => {
+        const couchNonAuth = new nodeCouchDb;
+
         return couch.createDatabase(dbName)
-            .then(() => addDbSecurity(dbName))
-            .then(() => createAdmin())
-            .then(() => couch.insert(dbName, {}))
+            .then(() => couchNonAuth.insert(dbName, {}))
             .then(() => {
                 throw new Error(`Inserting into the database ${dbName} without auth didn't fail`);
             }, err => {
@@ -594,10 +568,10 @@ describe('node-couchdb tests', () => {
 
 
     it('should reject update promise with EUNAUTHORIZED if user is not logged in', () => {
+        const couchNonAuth = new nodeCouchDb;
+
         return couch.createDatabase(dbName)
-            .then(() => addDbSecurity(dbName))
-            .then(() => createAdmin())
-            .then(() => couch.update(dbName, {_id: 123, _rev: 1}))
+            .then(() => couchNonAuth.update(dbName, {_id: 123, _rev: 1}))
             .then(() => {
                 throw new Error(`Updating into the database ${dbName} without auth didn't fail`);
             }, err => {
@@ -607,10 +581,10 @@ describe('node-couchdb tests', () => {
     });
 
     it('should reject delete promise with EUNAUTHORIZED if user is not logged in', () => {
+        const couchNonAuth = new nodeCouchDb;
+
         return couch.createDatabase(dbName)
-            .then(() => addDbSecurity(dbName))
-            .then(() => createAdmin())
-            .then(() => couch.del(dbName, 123, 1))
+            .then(() => couchNonAuth.del(dbName, 123, 1))
             .then(() => {
                 throw new Error(`Deleting into the database ${dbName} without auth didn't fail`);
             }, err => {
