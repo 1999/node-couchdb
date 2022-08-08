@@ -11,7 +11,7 @@
     "Peter Olson",
     "Nick Breland"
   ],
-  "main": "./node-couchdb.js",
+  "main": "./lib/node-couchdb.js",
   "type": "module",
   "repository": {
     "type": "git",
