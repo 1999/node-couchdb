@@ -1,3 +1,12 @@
+# 1.4.0
+
+ * Replaces deprecated request package with node-fetch (v3, sorry for the confusing commit message about v2, which was needed at first for my tests to run), which will allow a smoother transition to global fetch when it is no longer experimental.
+ * Updates dev dependencies including Babel for a clean npm audit
+ * Removes legacy Node support
+ * Changes tests to remove assumption of admin party. By default, CouchDB v3 (the current supported version) requires an admin user
+ * Fixes bug in test "should return promise for createDatabase operation" where the created database was not dropped afterward
+ * Adds a test for the mango method, and removes the "query" argument from it (seems like there isn't a need for it). Also corrects the example on the README for the mango method.
+
 # 1.3.0
 
  * **new**: Support for [update functions](http://docs.couchdb.org/en/2.0.0/couchapp/ddocs.html#update-functions) ([@Flamenco](https://github.com/Flamenco))
