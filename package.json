@@ -11,8 +11,7 @@
     "Peter Olson",
     "Nick Breland"
   ],
-  "main": "./lib/node-couchdb.js",
-  "type": "module",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/1999/node-couchdb.git"
@@ -21,7 +20,9 @@
     "url": "https://github.com/1999/node-couchdb/issues"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --require @babel/register --timeout 10000 --slow 10000 test/"
+    "test": "./node_modules/.bin/mocha --require @babel/register --timeout 10000 --slow 10000 test/",
+    "build": "./node_modules/@babel/cli/bin/babel.js src/node-couchdb.js --out-file dist/node-couchdb.js",
+    "prepare": "npm run build"
   },
   "keywords": [
     "couchdb",
@@ -29,14 +30,15 @@
   ],
   "dependencies": {
     "abort-controller": "^3.0.0",
-    "node-fetch": "^3.2.10"
+    "node-fetch": "^2"
   },
   "devDependencies": {
-    "dotenv": "^16.0.1",
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.18.10",
+    "@babel/preset-env": "^7.18.10",
     "@babel/register": "^7.18.9",
     "chai": "^4.1.1",
+    "dotenv": "^16.0.1",
     "mocha": "^10.0.0",
     "node-couchdb-plugin-memory": "^0.0.2"
   },
