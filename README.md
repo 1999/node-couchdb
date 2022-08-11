@@ -15,9 +15,17 @@ npm install node-couchdb --save
 ## Constructor
 `node-couchdb` exports constructor, which accepts one object argument with properties `host` (127.0.0.1 by default), `port` (5984 by default), `protocol` (http by default), `cache` (one of plugins, null by default), `auth` (object with properties `{user, pass}`) and `timeout` for all requests (5000 by default). All object fields are optional.
 
+ES Module:
 ```javascript
 import NodeCouchDb from 'node-couchdb';
+```
 
+Common JS:
+```javascript
+const NodeCouchDb from require('node-couchdb');
+```
+
+```javascript
 // node-couchdb instance with default options
 const couch = new NodeCouchDb();
 
