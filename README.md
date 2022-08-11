@@ -22,7 +22,7 @@ import NodeCouchDb from 'node-couchdb';
 
 Common JS:
 ```javascript
-const NodeCouchDb from require('node-couchdb');
+const NodeCouchDb = require('node-couchdb');
 ```
 
 ```javascript
