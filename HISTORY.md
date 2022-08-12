@@ -1,6 +1,6 @@
 # 1.4.0
 
- * Replaces deprecated request package with node-fetch (v3, sorry for the confusing commit message about v2, which was needed at first for my tests to run), which will allow a smoother transition to global fetch when it is no longer experimental.
+ * Replaces deprecated request package with node-fetch, which will allow a smoother transition to global fetch when it is no longer experimental.
  * Updates dev dependencies including Babel for a clean npm audit
  * Removes legacy Node support
  * Changes tests to remove assumption of admin party. By default, CouchDB v3 (the current supported version) requires an admin user
