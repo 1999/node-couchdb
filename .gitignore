@@ -1,6 +1,8 @@
 .DS_Store
 .DS_Store?
 
+.env
+
 lib-cov
 *.seed
 *.log
@@ -17,3 +19,5 @@ results
 npm-debug.log
 node_modules
 dist/
+
+cleanup.js
