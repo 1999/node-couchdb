@@ -1,8 +1,6 @@
 .DS_Store
 .DS_Store?
 
-.env
-
 lib-cov
 *.seed
 *.log
