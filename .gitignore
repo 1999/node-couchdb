@@ -19,5 +19,3 @@ results
 npm-debug.log
 node_modules
 dist/
-
-cleanup.js
