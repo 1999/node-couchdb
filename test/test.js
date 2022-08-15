@@ -3,7 +3,7 @@
 import {assert} from 'chai';
 import request from 'request';
 import memoryCache from 'node-couchdb-plugin-memory';
-import nodeCouchDb from '../lib/node-couchdb';
+import nodeCouchDb from '../src/node-couchdb.js';
 
 const noop = function () {}
 const cache = new memoryCache;
