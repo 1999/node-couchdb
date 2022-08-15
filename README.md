@@ -19,28 +19,34 @@ npm install node-couchdb --save
 const NodeCouchDb = require('node-couchdb');
 
 // node-couchdb instance with default options
-const couch = new NodeCouchDb();
+const couch = new NodeCouchDb({
+    auth: {
+        user: AUTH_USER,
+        pass: AUTH_PASS
+    }
+});
 
 // node-couchdb instance with Memcached
 const MemcacheNode = require('node-couchdb-plugin-memcached');
 const couchWithMemcache = new NodeCouchDb({
-    cache: new MemcacheNode
+    cache: new MemcacheNode,
+    auth: {
+        user: AUTH_USER,
+        pass: AUTH_PASS
+    }
 });
 
 // node-couchdb instance talking to external service
 const couchExternal = new NodeCouchDb({
     host: 'couchdb.external.service',
     protocol: 'https',
-    port: 6984
-});
-
-// not admin party
-const couchAuth = new NodeCouchDb({
+    port: 6984,
     auth: {
-        user: 'login',
-        pass: 'secret'
+        user: AUTH_USER,
+        pass: AUTH_PASS
     }
 });
+
 ```
 
 All node-couchdb methods return Promise instances which resolve if everything works as expected and reject with Error instance which usually has `code` and `body` fields. See package source and tests for more info.
