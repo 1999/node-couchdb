@@ -107,8 +107,10 @@ couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
 const dbName = "database";
 const mangoQuery = {
     selector: {
-        $gte: {firstname: 'Ann'},
-        $lt: {firstname: 'George'}
+        firstname: {
+            $gte: 'Ann',
+            $lt: 'George'
+        }
     }
 };
 const parameters = {};
