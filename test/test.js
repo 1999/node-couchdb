@@ -1,7 +1,7 @@
 'use strict';
 
 import {assert} from 'chai';
-import request from 'request';
+import fetch, { Headers } from 'node-fetch';
 import memoryCache from 'node-couchdb-plugin-memory';
 import nodeCouchDb from '../lib/node-couchdb';
 
@@ -22,21 +22,15 @@ describe('node-couchdb tests', () => {
 
     afterEach(done => {
         const onFinish = () => done();
+        const url = `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`;
 
         Promise.all([
             // drop database if it was used
             couch.dropDatabase(dbName).catch(noop),
 
             // delete admin user if it was created
-            new Promise(resolve => {
-                request({
-                    url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
-                    method: 'DELETE',
-                    auth: {
-                        user: AUTH_USER,
-                        pass: AUTH_PASS
-                    }
-                }, resolve);
+            fetch(url, {
+                method: 'DELETE',
             })
         ]).then(onFinish).catch(onFinish);
     });
@@ -198,7 +192,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(resData => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -244,7 +238,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insertAttachment(dbName, docId, 'test.txt', {}, docRevision))
             .then((resData) => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -258,7 +252,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(resData => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -309,7 +303,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(({data}) => couch.update(dbName, {_id: data.id, _rev: data.rev, new_field: 'some_string'}))
             .then(({data, headers, status}) => {
-                assert.isObject(headers, 'result headers is not an object');
+                assert.instanceOf(headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(data, 'result data is not an object');
 
                 assert.strictEqual(status, 201);
@@ -423,13 +417,13 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, doc))
             .then(({data, headers, status}) => {
                 assert.isObject(data);
-                assert.isObject(headers);
+                assert.instanceOf(headers, Headers);
                 assert.strictEqual(status, 201);
             })
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 200);
-                assert.isObject(headers);
+                assert.instanceOf(headers, Headers);
                 assert.isObject(data);
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
@@ -456,7 +450,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 304);
-                assert.isObject(headers, 'headers data is not an object');
+                assert.instanceOf(headers, Headers, 'headers data is not an instance of Headers');
                 assert.isObject(data, 'data is empty');
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
@@ -501,10 +495,20 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    function createDesignDocument(dbName) {
-        return new Promise((resolve, reject) => {
-            request.put({
-                url: `http://127.0.0.1:5984/${dbName}/_design/test`,
+    async function createDesignDocument(dbName) {
+        try {
+            const url = `http://127.0.0.1:5984/${dbName}/_design/test`;
+            const str = `${AUTH_USER}:${AUTH_PASS}`;
+            const b64 = Buffer.from(str, 'utf8').toString('base64');
+
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'user-agent': 'node-couchdb/1',
+                    'content-type': 'application/json',
+                    'authorization': 'Basic ' + b64
+                },
+
                 body: JSON.stringify({
                     _id: "_design/test",
                     updates: {
@@ -512,14 +516,11 @@ describe('node-couchdb tests', () => {
                     },
                     language: "javascript"
                 })
-            }, (err, res, body) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+            }); 
+            return res;
+        } catch (err) {
+            throw (new Error(err))
+        }
     }
 
     it('should use update functions', () => {

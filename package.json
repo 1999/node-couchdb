@@ -29,7 +29,8 @@
     "nosql"
   ],
   "dependencies": {
-    "request": "^2.85.0"
+    "abort-controller": "^3.0.0",
+    "node-fetch": "^2"
   },
   "devDependencies": {
     "babel-cli": "^6.7.5",
