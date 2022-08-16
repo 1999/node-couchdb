@@ -1,15 +1,16 @@
 'use strict';
 
 import {assert} from 'chai';
-import request from 'request';
+import fetch, { Headers } from 'node-fetch';
 import memoryCache from 'node-couchdb-plugin-memory';
 import nodeCouchDb from '../lib/node-couchdb';
+import 'dotenv/config';
 
-const noop = function () {}
+const noop = function () {};
 const cache = new memoryCache;
 
-const AUTH_USER = 'some_login';
-const AUTH_PASS = 'secret_pass';
+const AUTH_USER = process.env.COUCHDB_USER;
+const AUTH_PASS = process.env.COUCHDB_PASS;
 
 describe('node-couchdb tests', () => {
     let dbName;
@@ -17,26 +18,25 @@ describe('node-couchdb tests', () => {
 
     beforeEach(() => {
         dbName = `sample${Date.now()}`;
-        couch = new nodeCouchDb;
+        couch = new nodeCouchDb({
+            auth: {
+                user: AUTH_USER,
+                pass: AUTH_PASS
+            }
+        });
     });
 
     afterEach(done => {
         const onFinish = () => done();
+        const url = `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`;
 
         Promise.all([
             // drop database if it was used
             couch.dropDatabase(dbName).catch(noop),
 
             // delete admin user if it was created
-            new Promise(resolve => {
-                request({
-                    url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
-                    method: 'DELETE',
-                    auth: {
-                        user: AUTH_USER,
-                        pass: AUTH_PASS
-                    }
-                }, resolve);
+            fetch(url, {
+                method: 'DELETE',
             })
         ]).then(onFinish).catch(onFinish);
     });
@@ -95,6 +95,7 @@ describe('node-couchdb tests', () => {
         const promise = couch.createDatabase(dbName)
             .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'createDatabase() result is not a promise');
+        return promise;
     });
 
     it('should create new database', () => {
@@ -198,7 +199,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(resData => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -244,7 +245,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insertAttachment(dbName, docId, 'test.txt', {}, docRevision))
             .then((resData) => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -258,7 +259,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(resData => {
                 assert.isObject(resData, 'result is not an object');
-                assert.isObject(resData.headers, 'result headers is not an object');
+                assert.instanceOf(resData.headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(resData.data, 'result data is not an object');
 
                 assert.isString(resData.data.id, 'ID is not a string');
@@ -309,7 +310,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, {}))
             .then(({data}) => couch.update(dbName, {_id: data.id, _rev: data.rev, new_field: 'some_string'}))
             .then(({data, headers, status}) => {
-                assert.isObject(headers, 'result headers is not an object');
+                assert.instanceOf(headers, Headers, 'result headers is not an instance of Headers');
                 assert.isObject(data, 'result data is not an object');
 
                 assert.strictEqual(status, 201);
@@ -423,16 +424,147 @@ describe('node-couchdb tests', () => {
             .then(() => couch.insert(dbName, doc))
             .then(({data, headers, status}) => {
                 assert.isObject(data);
-                assert.isObject(headers);
+                assert.instanceOf(headers, Headers);
                 assert.strictEqual(status, 201);
             })
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 200);
-                assert.isObject(headers);
+                assert.instanceOf(headers, Headers);
                 assert.isObject(data);
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
+    });
+
+    it('should return inserted document (using mango query)', () => {
+        const doc = {
+            _id: 'some_id',
+            firstname: 'Ann',
+        };
+
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, doc))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.mango(dbName, { 
+                selector: {
+                    firstname: {
+                        $eq: "Ann"
+                    }
+                }
+            }))
+            .then(({data, headers, status}) => {
+                const returnedDoc = data.docs[0];
+                assert.strictEqual(status, 200);
+                assert.instanceOf(headers, Headers);
+                assert.isObject(returnedDoc);
+                assert.strictEqual(returnedDoc._id, doc._id, 'fetched document id differs from original');
+            });
+
+    });
+
+    it('should return correct number of docs (using mango query)', () => {
+        const doc1 = {
+            _id: 'some_id1',
+            firstname: 'Bob',
+        };
+        const doc2 = {
+            _id: 'some_id2',
+            firstname: 'Ann',
+        };
+
+        const doc3 = {
+            _id: 'some_id3',
+            firstname: 'George',
+        };
+
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, doc1))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.insert(dbName, doc2))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.insert(dbName, doc3))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.mango(dbName, { 
+                selector: {
+                    firstname: {
+                        $gte: "Ann",
+                        $lt: "George"
+                    }
+                }
+            }))
+            .then(({data, headers, status}) => {
+                assert.strictEqual(status, 200);
+                assert.instanceOf(headers, Headers);
+                assert.isArray(data.docs);
+                assert.lengthOf(data.docs, 2, 'response contains wrong number of documents');
+            });
+
+    });
+
+    it('should return correct number of documents (using mango query with multiple selectors)', () => {
+
+        const doc1 = {
+            _id: 'some_id1',
+            color: 'red',
+            firstname: 'Ann',
+        };
+        const doc2 = {
+            _id: 'some_id2',
+            color: 'red',
+            firstname: 'Bob',
+        };
+
+        const doc3 = {
+            _id: 'some_id3',
+            color: 'green',
+            firstname: 'George',
+        };
+
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, doc1))
+            .then(() => couch.insert(dbName, doc2))
+            .then(() => couch.insert(dbName, doc3))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.mango(dbName, { 
+                selector: {
+                    firstname: {
+                        $gt: "Ann"
+                    },
+                    color: {
+                        $eq: "red"
+                    }
+                }
+            }))
+            .then(({data, headers, status}) => {
+                assert.strictEqual(status, 200);
+                assert.instanceOf(headers, Headers);
+                assert.isArray(data.docs);
+                assert.lengthOf(data.docs, 1, 'response contains wrong number of documents');
+            });
+
     });
 
     it('should return inserted document from cache', () => {
@@ -456,7 +588,7 @@ describe('node-couchdb tests', () => {
             .then(() => couch.get(dbName, doc._id))
             .then(({data, headers, status}) => {
                 assert.strictEqual(status, 304);
-                assert.isObject(headers, 'headers data is not an object');
+                assert.instanceOf(headers, Headers, 'headers data is not an instance of Headers');
                 assert.isObject(data, 'data is empty');
                 assert.strictEqual(data._id, doc._id, 'fetched document id differs from original');
             });
@@ -501,10 +633,20 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    function createDesignDocument(dbName) {
-        return new Promise((resolve, reject) => {
-            request.put({
-                url: `http://127.0.0.1:5984/${dbName}/_design/test`,
+    async function createDesignDocument(dbName) {
+        try {
+            const url = `http://127.0.0.1:5984/${dbName}/_design/test`;
+            const str = `${AUTH_USER}:${AUTH_PASS}`;
+            const b64 = Buffer.from(str, 'utf8').toString('base64');
+
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'user-agent': 'node-couchdb/1',
+                    'content-type': 'application/json',
+                    'authorization': 'Basic ' + b64
+                },
+
                 body: JSON.stringify({
                     _id: "_design/test",
                     updates: {
@@ -512,14 +654,11 @@ describe('node-couchdb tests', () => {
                     },
                     language: "javascript"
                 })
-            }, (err, res, body) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
+            }); 
+            return res;
+        } catch (err) {
+            throw (new Error(err))
+        }
     }
 
     it('should use update functions', () => {
@@ -531,67 +670,25 @@ describe('node-couchdb tests', () => {
             });
     });
 
-    function createAdmin() {
-        return new Promise((resolve, reject) => {
-            request.put({
-                url: `http://127.0.0.1:5984/_config/admins/${AUTH_USER}`,
-                body: JSON.stringify(AUTH_PASS)
-            }, (err, res, body) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    }
-
-    function addDbSecurity(dbName) {
-        return new Promise(function(resolve, reject) {
-            const opts = {
-                method: 'PUT',
-                url: `http://127.0.0.1:5984/${dbName}/_security`,
-                body: {"admins": { "names": ['somename'],"roles": []}, "members": {"names": ['somename'],"roles": []}},
-                json: true
-            };
-
-            request(opts, function(err, response, body) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            })
-        })
-    }
-
-    // auth
-    // @see http://guide.couchdb.org/draft/security.html#authentication
-    // @see https://github.com/1999/node-couchdb/issues/4
     it('should use basic auth for admin features', () => {        
-        return createAdmin()
-            .then(() => couch.createDatabase(dbName))
+        const couchNonAuth = new nodeCouchDb;
+
+        return couchNonAuth.createDatabase(dbName)
             .then(() => {
                 throw new Error('admin party is off but createDatabase() op promise has been resolved');
             }, err => {
                 assert.instanceOf(err, Error, 'err is not an instance of Error');
                 assert.strictEqual(err.code, 'ENOTADMIN', 'err code is not ENOTADMIN');
 
-                const couchAuth = new nodeCouchDb({
-                    auth: {
-                        user: AUTH_USER,
-                        pass: AUTH_PASS
-                    }
-                });
-
-                return couchAuth.createDatabase(dbName);
+                return couch.createDatabase(dbName);
             });
     });
 
     it('should reject insert promise with EUNAUTHORIZED if user is not logged in', () => {
+        const couchNonAuth = new nodeCouchDb;
+
         return couch.createDatabase(dbName)
-            .then(() => addDbSecurity(dbName))
-            .then(() => createAdmin())
-            .then(() => couch.insert(dbName, {}))
+            .then(() => couchNonAuth.insert(dbName, {}))
             .then(() => {
                 throw new Error(`Inserting into the database ${dbName} without auth didn't fail`);
             }, err => {
@@ -602,10 +699,10 @@ describe('node-couchdb tests', () => {
 
 
     it('should reject update promise with EUNAUTHORIZED if user is not logged in', () => {
+        const couchNonAuth = new nodeCouchDb;
+
         return couch.createDatabase(dbName)
-            .then(() => addDbSecurity(dbName))
-            .then(() => createAdmin())
-            .then(() => couch.update(dbName, {_id: 123, _rev: 1}))
+            .then(() => couchNonAuth.update(dbName, {_id: 123, _rev: 1}))
             .then(() => {
                 throw new Error(`Updating into the database ${dbName} without auth didn't fail`);
             }, err => {
@@ -615,10 +712,10 @@ describe('node-couchdb tests', () => {
     });
 
     it('should reject delete promise with EUNAUTHORIZED if user is not logged in', () => {
+        const couchNonAuth = new nodeCouchDb;
+
         return couch.createDatabase(dbName)
-            .then(() => addDbSecurity(dbName))
-            .then(() => createAdmin())
-            .then(() => couch.del(dbName, 123, 1))
+            .then(() => couchNonAuth.del(dbName, 123, 1))
             .then(() => {
                 throw new Error(`Deleting into the database ${dbName} without auth didn't fail`);
             }, err => {
