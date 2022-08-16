@@ -429,6 +429,137 @@ describe('node-couchdb tests', () => {
             });
     });
 
+    it('should return inserted document (using mango query)', () => {
+        const doc = {
+            _id: 'some_id',
+            firstname: 'Ann',
+        };
+
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, doc))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.mango(dbName, { 
+                selector: {
+                    firstname: {
+                        $eq: "Ann"
+                    }
+                }
+            }))
+            .then(({data, headers, status}) => {
+                const returnedDoc = data.docs[0];
+                assert.strictEqual(status, 200);
+                assert.instanceOf(headers, Headers);
+                assert.isObject(returnedDoc);
+                assert.strictEqual(returnedDoc._id, doc._id, 'fetched document id differs from original');
+            });
+
+    });
+
+    it('should return correct number of docs (using mango query)', () => {
+        const doc1 = {
+            _id: 'some_id1',
+            firstname: 'Bob',
+        };
+        const doc2 = {
+            _id: 'some_id2',
+            firstname: 'Ann',
+        };
+
+        const doc3 = {
+            _id: 'some_id3',
+            firstname: 'George',
+        };
+
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, doc1))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.insert(dbName, doc2))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.insert(dbName, doc3))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.mango(dbName, { 
+                selector: {
+                    firstname: {
+                        $gte: "Ann",
+                        $lt: "George"
+                    }
+                }
+            }))
+            .then(({data, headers, status}) => {
+                assert.strictEqual(status, 200);
+                assert.instanceOf(headers, Headers);
+                assert.isArray(data.docs);
+                assert.lengthOf(data.docs, 2, 'response contains wrong number of documents');
+            });
+
+    });
+
+    it('should return correct number of documents (using mango query with multiple selectors)', () => {
+
+        const doc1 = {
+            _id: 'some_id1',
+            color: 'red',
+            firstname: 'Ann',
+        };
+        const doc2 = {
+            _id: 'some_id2',
+            color: 'red',
+            firstname: 'Bob',
+        };
+
+        const doc3 = {
+            _id: 'some_id3',
+            color: 'green',
+            firstname: 'George',
+        };
+
+
+        return couch.createDatabase(dbName)
+            .then(() => couch.insert(dbName, doc1))
+            .then(() => couch.insert(dbName, doc2))
+            .then(() => couch.insert(dbName, doc3))
+            .then(({data, headers, status}) => {
+                assert.isObject(data);
+                assert.instanceOf(headers, Headers);
+                assert.strictEqual(status, 201);
+            })
+            .then(() => couch.mango(dbName, { 
+                selector: {
+                    firstname: {
+                        $gt: "Ann"
+                    },
+                    color: {
+                        $eq: "red"
+                    }
+                }
+            }))
+            .then(({data, headers, status}) => {
+                assert.strictEqual(status, 200);
+                assert.instanceOf(headers, Headers);
+                assert.isArray(data.docs);
+                assert.lengthOf(data.docs, 1, 'response contains wrong number of documents');
+            });
+
+    });
+
     it('should return inserted document from cache', () => {
         const doc = {
             _id: 'some_id',
