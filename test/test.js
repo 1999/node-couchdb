@@ -95,6 +95,7 @@ describe('node-couchdb tests', () => {
         const promise = couch.createDatabase(dbName)
             .catch(function(){ /* no error handling */ });
         assert.instanceOf(promise, Promise, 'createDatabase() result is not a promise');
+        return promise;
     });
 
     it('should create new database', () => {
