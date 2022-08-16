@@ -108,7 +108,7 @@ couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
 });
 ```
 
-## Query using Mango (CouchDB 2.x)
+## Query using Mango
 ```javascript
 const dbName = "database";
 const mangoQuery = {
