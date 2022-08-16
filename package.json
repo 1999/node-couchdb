@@ -37,9 +37,9 @@
     "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
     "@babel/register": "^7.18.9",
+    "mocha": "^10.0.0",
     "chai": "^4.1.1",
     "dotenv": "^16.0.1",
-    "mocha": "^10.0.0",
     "node-couchdb-plugin-memory": "^0.0.2"
   },
   "license": "MIT",
