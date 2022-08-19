@@ -108,7 +108,7 @@ couch.get(dbName, viewUrl, queryOptions).then(({data, headers, status}) => {
 });
 ```
 
-## Query using Mango (CouchDB 2.x)
+## Query using Mango
 ```javascript
 const dbName = "database";
 const mangoQuery = {
@@ -119,9 +119,8 @@ const mangoQuery = {
         }
     }
 };
-const parameters = {};
 
-couch.mango(dbName, mangoQuery, parameters).then(({data, headers, status}) => {
+couch.mango(dbName, mangoQuery).then(({data, headers, status}) => {
     // data is json response
     // headers is an object with all response headers
     // status is statusCode number
