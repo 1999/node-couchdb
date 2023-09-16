@@ -1,6 +1,6 @@
 {
   "name": "node-couchdb",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "homepage": "https://github.com/1999/node-couchdb",
   "author": "Dmitry Sorin <info@staypositive.ru>",
   "description": "ES2015-compatible package to interact with CouchDB",
@@ -29,8 +29,7 @@
     "nosql"
   ],
   "dependencies": {
-    "abort-controller": "^3.0.0",
-    "node-fetch": "^2"
+    "abort-controller": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.18.10",
@@ -44,6 +43,6 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   }
 }

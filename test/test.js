@@ -1,7 +1,6 @@
 'use strict';
 
 import {assert} from 'chai';
-import fetch, { Headers } from 'node-fetch';
 import memoryCache from 'node-couchdb-plugin-memory';
 import nodeCouchDb from '../src/node-couchdb.js';
 import 'dotenv/config';
