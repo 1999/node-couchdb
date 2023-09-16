@@ -1,6 +1,5 @@
 'use strict';
 import crypto from 'crypto';
-import fetch from 'node-fetch';
 import AbortController from 'abort-controller';
 
 // @see https://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options

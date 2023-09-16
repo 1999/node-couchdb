@@ -1,3 +1,8 @@
+# 2.1.0
+
+ * **node version support**: Removes legacy Node support. Only Node >= 18 supported.
+ * **new**: Removes the node-fetch package, since the Fetch API is supported natively in Node 18 (and in [Bun](https://bun.sh))
+
 # 2.0.0
 
  * **breaking change**: Removes legacy Node support. Only Node >= 14 supported.
